@@ -55,6 +55,14 @@ export const BudgetTransactions = () => {
   
   const [editingId, setEditingId] = useState<string | null>(null);
 
+  const validateTransaction = (transaction: Partial<Transaction>) => {
+    if (!transaction.description?.trim()) return false;
+    if (!transaction.category?.trim()) return false;
+    if (typeof transaction.amount !== 'number') return false;
+    if (!transaction.date) return false;
+    return true;
+  };
+
   const handleAddTransaction = (e?: KeyboardEvent) => {
     if (e && e.key !== 'Enter') return;
     
@@ -70,10 +78,19 @@ export const BudgetTransactions = () => {
     const transaction: Transaction = {
       id: Date.now().toString(),
       date: newTransaction.date,
-      description: newTransaction.description,
-      category: newTransaction.category,
+      description: newTransaction.description.trim(),
+      category: newTransaction.category.trim(),
       amount: Number(newTransaction.amount),
     };
+
+    if (!validateTransaction(transaction)) {
+      toast({
+        title: "Error",
+        description: "Invalid transaction data",
+        variant: "destructive",
+      });
+      return;
+    }
 
     setTransactions([transaction, ...transactions]);
     setNewTransaction({
@@ -95,7 +112,7 @@ export const BudgetTransactions = () => {
         if (field === 'amount') {
           return { ...tx, [field]: Number(value) };
         }
-        return { ...tx, [field]: value };
+        return { ...tx, [field]: value.trim() };
       }
       return tx;
     }));
@@ -154,7 +171,7 @@ export const BudgetTransactions = () => {
             onKeyPress={(e) => handleAddTransaction(e as KeyboardEvent)}
             className="w-32"
           />
-          <Button size="icon" onClick={() => handleAddTransaction()}>
+          <Button size="icon" onClick={() => handleAddTransaction()} className="h-8 w-8">
             <Plus className="h-4 w-4" />
           </Button>
         </div>
@@ -181,18 +198,21 @@ export const BudgetTransactions = () => {
                         type="date"
                         value={tx.date}
                         onChange={(e) => handleEditTransaction(tx.id, 'date', e.target.value)}
+                        className="w-40"
                       />
                     </TableCell>
                     <TableCell>
                       <Input
                         value={tx.description}
                         onChange={(e) => handleEditTransaction(tx.id, 'description', e.target.value)}
+                        className="w-full"
                       />
                     </TableCell>
                     <TableCell>
                       <Input
                         value={tx.category}
                         onChange={(e) => handleEditTransaction(tx.id, 'category', e.target.value)}
+                        className="w-full"
                       />
                     </TableCell>
                     <TableCell>
@@ -201,6 +221,7 @@ export const BudgetTransactions = () => {
                         value={tx.amount}
                         onChange={(e) => handleEditTransaction(tx.id, 'amount', e.target.value)}
                         onKeyPress={(e) => e.key === 'Enter' && setEditingId(null)}
+                        className="w-full"
                       />
                     </TableCell>
                   </>
@@ -220,6 +241,7 @@ export const BudgetTransactions = () => {
                       size="icon"
                       variant="ghost"
                       onClick={() => editingId === tx.id ? setEditingId(null) : setEditingId(tx.id)}
+                      className="h-8 w-8"
                     >
                       <Pencil className="h-4 w-4" />
                     </Button>
@@ -227,6 +249,7 @@ export const BudgetTransactions = () => {
                       size="icon"
                       variant="ghost"
                       onClick={() => handleCopyTransaction(tx)}
+                      className="h-8 w-8"
                     >
                       <Copy className="h-4 w-4" />
                     </Button>
@@ -234,6 +257,7 @@ export const BudgetTransactions = () => {
                       size="icon"
                       variant="ghost"
                       onClick={() => handleDeleteTransaction(tx.id)}
+                      className="h-8 w-8"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>

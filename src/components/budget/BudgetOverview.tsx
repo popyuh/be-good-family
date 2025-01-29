@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, KeyboardEvent } from "react";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { DollarSign, TrendingUp, TrendingDown, Pencil } from "lucide-react";
@@ -13,8 +13,8 @@ export const BudgetOverview = () => {
   const [spent, setSpent] = useState(3240);
   
   const remaining = budget - spent;
-  const spentPercentage = (spent / budget) * 100;
-  const remainingPercentage = (remaining / budget) * 100;
+  const spentPercentage = Math.min((spent / budget) * 100, 100);
+  const remainingPercentage = Math.max((remaining / budget) * 100, 0);
 
   const handleSave = () => {
     if (spent > budget) {
@@ -32,13 +32,19 @@ export const BudgetOverview = () => {
     });
   };
 
+  const handleKeyPress = (e: KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSave();
+    }
+  };
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       <Card className="p-4 md:p-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="p-2 gradient-bg rounded-lg">
-              <DollarSign className="h-6 w-6" />
+              <DollarSign className="h-5 w-5" />
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Total Budget</p>
@@ -47,8 +53,9 @@ export const BudgetOverview = () => {
                   type="number"
                   value={budget}
                   onChange={(e) => setBudget(Number(e.target.value))}
-                  onKeyPress={(e) => e.key === 'Enter' && handleSave()}
+                  onKeyPress={handleKeyPress}
                   className="w-32"
+                  autoFocus
                 />
               ) : (
                 <h3 className="text-2xl font-bold">${budget.toLocaleString()}</h3>
@@ -59,6 +66,7 @@ export const BudgetOverview = () => {
             size="icon"
             variant="ghost"
             onClick={() => isEditing ? handleSave() : setIsEditing(true)}
+            className="h-8 w-8"
           >
             <Pencil className="h-4 w-4" />
           </Button>
@@ -69,7 +77,7 @@ export const BudgetOverview = () => {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="p-2 gradient-bg rounded-lg">
-              <TrendingDown className="h-6 w-6" />
+              <TrendingDown className="h-5 w-5" />
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Spent</p>
@@ -78,7 +86,7 @@ export const BudgetOverview = () => {
                   type="number"
                   value={spent}
                   onChange={(e) => setSpent(Number(e.target.value))}
-                  onKeyPress={(e) => e.key === 'Enter' && handleSave()}
+                  onKeyPress={handleKeyPress}
                   className="w-32"
                 />
               ) : (
@@ -93,7 +101,7 @@ export const BudgetOverview = () => {
       <Card className="p-4 md:p-6">
         <div className="flex items-center gap-4">
           <div className="p-2 gradient-bg rounded-lg">
-            <TrendingUp className="h-6 w-6" />
+            <TrendingUp className="h-5 w-5" />
           </div>
           <div>
             <p className="text-sm text-muted-foreground">Remaining</p>

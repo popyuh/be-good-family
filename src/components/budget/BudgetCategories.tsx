@@ -24,6 +24,12 @@ export const BudgetCategories = () => {
   const [newCategory, setNewCategory] = useState({ name: "", budget: "" });
   const [editingId, setEditingId] = useState<number | null>(null);
 
+  const validateCategory = (category: Partial<Category>) => {
+    if (!category.name?.trim()) return false;
+    if (typeof category.budget === 'number' && category.budget <= 0) return false;
+    return true;
+  };
+
   const handleAddCategory = (e?: KeyboardEvent) => {
     if (e && e.key !== 'Enter') return;
     
@@ -36,12 +42,27 @@ export const BudgetCategories = () => {
       return;
     }
 
-    setCategories([...categories, {
-      name: newCategory.name,
-      budget: Number(newCategory.budget),
+    const category = {
+      name: newCategory.name.trim(),
+      budget: Math.abs(Number(newCategory.budget)),
       spent: 0
-    }]);
+    };
+
+    if (!validateCategory(category)) {
+      toast({
+        title: "Error",
+        description: "Invalid category data",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setCategories([...categories, category]);
     setNewCategory({ name: "", budget: "" });
+    toast({
+      title: "Success",
+      description: "Category added successfully",
+    });
   };
 
   const handleEditCategory = (index: number, field: 'name' | 'budget', value: string) => {
@@ -49,12 +70,12 @@ export const BudgetCategories = () => {
     if (field === 'budget') {
       updatedCategories[index] = {
         ...updatedCategories[index],
-        [field]: Number(value)
+        [field]: Math.abs(Number(value))
       };
     } else {
       updatedCategories[index] = {
         ...updatedCategories[index],
-        [field]: value
+        [field]: value.trim()
       };
     }
     setCategories(updatedCategories);
@@ -69,11 +90,12 @@ export const BudgetCategories = () => {
   };
 
   const handleCopyCategory = (category: Category) => {
-    setCategories([...categories, {
+    const newCategory = {
       ...category,
       name: `${category.name} (Copy)`,
       spent: 0
-    }]);
+    };
+    setCategories([...categories, newCategory]);
     toast({
       title: "Success",
       description: "Category copied successfully",
@@ -99,7 +121,7 @@ export const BudgetCategories = () => {
             onKeyPress={(e) => handleAddCategory(e as KeyboardEvent)}
             className="w-32"
           />
-          <Button size="icon" onClick={() => handleAddCategory()}>
+          <Button size="icon" onClick={() => handleAddCategory()} className="h-8 w-8">
             <Plus className="h-4 w-4" />
           </Button>
         </div>
@@ -107,7 +129,7 @@ export const BudgetCategories = () => {
 
       <div className="grid gap-4">
         {categories.map((category, index) => {
-          const percentage = (category.spent / category.budget) * 100;
+          const percentage = Math.min((category.spent / category.budget) * 100, 100);
           const isEditing = editingId === index;
 
           return (
@@ -121,6 +143,7 @@ export const BudgetCategories = () => {
                         onChange={(e) => handleEditCategory(index, 'name', e.target.value)}
                         onKeyPress={(e) => e.key === 'Enter' && setEditingId(null)}
                         className="w-40"
+                        autoFocus
                       />
                       <Input
                         type="number"
@@ -134,7 +157,7 @@ export const BudgetCategories = () => {
                     <div className="flex justify-between items-center">
                       <h3 className="font-medium">{category.name}</h3>
                       <p className="text-sm text-muted-foreground">
-                        ${category.spent} / ${category.budget}
+                        ${category.spent.toLocaleString()} / ${category.budget.toLocaleString()}
                       </p>
                     </div>
                   )}
@@ -144,6 +167,7 @@ export const BudgetCategories = () => {
                     size="icon"
                     variant="ghost"
                     onClick={() => isEditing ? setEditingId(null) : setEditingId(index)}
+                    className="h-8 w-8"
                   >
                     <Pencil className="h-4 w-4" />
                   </Button>
@@ -151,6 +175,7 @@ export const BudgetCategories = () => {
                     size="icon"
                     variant="ghost"
                     onClick={() => handleCopyCategory(category)}
+                    className="h-8 w-8"
                   >
                     <Copy className="h-4 w-4" />
                   </Button>
@@ -158,6 +183,7 @@ export const BudgetCategories = () => {
                     size="icon"
                     variant="ghost"
                     onClick={() => handleDeleteCategory(index)}
+                    className="h-8 w-8"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
