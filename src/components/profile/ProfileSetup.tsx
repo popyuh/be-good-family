@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -20,20 +21,30 @@ const colorOptions: ColorOption[] = [
 ];
 
 const emojiOptions: EmojiOption[] = [
-  { emoji: "👤", description: "User" },
-  { emoji: "😊", description: "Smile" },
-  { emoji: "🌟", description: "Star" },
-  { emoji: "🎨", description: "Artist" },
-  { emoji: "📚", description: "Book" },
-  { emoji: "💻", description: "Computer" },
+  { emoji: "👤" },
+  { emoji: "😊" },
+  { emoji: "🌟" },
+  { emoji: "🎨" },
+  { emoji: "📚" },
+  { emoji: "💻" },
 ];
 
 export const ProfileSetup = () => {
   const [selectedColor, setSelectedColor] = useState<string>(colorOptions[0].value);
   const [selectedEmoji, setSelectedEmoji] = useState<string>(emojiOptions[0].emoji);
+  const [name, setName] = useState<string>("");
   const { toast } = useToast();
 
   const handleSubmit = async () => {
+    if (!name.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter your name",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       const { data: { user } } = await supabase.auth.getUser();
       
@@ -51,6 +62,7 @@ export const ProfileSetup = () => {
         .upsert({
           id: user.id,
           email: user.email,
+          name: name.trim(),
           color: selectedColor,
           emoji: selectedEmoji,
         });
@@ -79,6 +91,15 @@ export const ProfileSetup = () => {
       <h2 className="text-2xl font-bold mb-6">Complete Your Profile</h2>
       
       <div className="space-y-6">
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Your name</label>
+          <Input
+            placeholder="Enter your name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+        </div>
+
         <div className="space-y-2">
           <label className="text-sm font-medium">Choose your color</label>
           <Select value={selectedColor} onValueChange={setSelectedColor}>
@@ -110,10 +131,7 @@ export const ProfileSetup = () => {
             <SelectContent>
               {emojiOptions.map((option) => (
                 <SelectItem key={option.emoji} value={option.emoji}>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xl">{option.emoji}</span>
-                    <span>{option.description}</span>
-                  </div>
+                  <span className="text-xl">{option.emoji}</span>
                 </SelectItem>
               ))}
             </SelectContent>
