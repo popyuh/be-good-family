@@ -19,6 +19,10 @@ const Budget = () => {
     { name: "Transportation", budget: 200, spent: 150 },
   ]);
 
+  const handleCategoriesUpdate = (newCategories: Category[]) => {
+    setCategories(newCategories);
+  };
+
   return (
     <Layout>
       <div className="max-w-6xl mx-auto space-y-8">
@@ -34,7 +38,10 @@ const Budget = () => {
             <TabsTrigger value="transactions">Transactions</TabsTrigger>
           </TabsList>
           <TabsContent value="categories">
-            <BudgetCategories />
+            <BudgetCategories 
+              initialCategories={categories}
+              onCategoriesChange={handleCategoriesUpdate}
+            />
           </TabsContent>
           <TabsContent value="transactions">
             <BudgetTransactions />

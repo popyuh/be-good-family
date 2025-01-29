@@ -1,4 +1,4 @@
-import { useState, KeyboardEvent } from "react";
+import { useState, KeyboardEvent, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
@@ -12,17 +12,20 @@ type Category = {
   spent: number;
 };
 
-export const BudgetCategories = () => {
+type BudgetCategoriesProps = {
+  initialCategories: Category[];
+  onCategoriesChange: (categories: Category[]) => void;
+};
+
+export const BudgetCategories = ({ initialCategories, onCategoriesChange }: BudgetCategoriesProps) => {
   const { toast } = useToast();
-  const [categories, setCategories] = useState<Category[]>([
-    { name: "Groceries", budget: 800, spent: 650 },
-    { name: "Utilities", budget: 400, spent: 380 },
-    { name: "Entertainment", budget: 300, spent: 220 },
-    { name: "Transportation", budget: 200, spent: 150 },
-  ]);
-  
+  const [categories, setCategories] = useState<Category[]>(initialCategories);
   const [newCategory, setNewCategory] = useState({ name: "", budget: "" });
   const [editingId, setEditingId] = useState<number | null>(null);
+
+  useEffect(() => {
+    onCategoriesChange(categories);
+  }, [categories, onCategoriesChange]);
 
   const validateCategory = (category: Partial<Category>) => {
     if (!category.name?.trim()) return false;
