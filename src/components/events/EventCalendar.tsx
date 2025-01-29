@@ -42,7 +42,7 @@ export function EventCalendar() {
   });
 
   const selectedDateEvents = events.filter(
-    (event) => format(event.start_date, "yyyy-MM-dd") === format(date!, "yyyy-MM-dd")
+    (event) => date && format(event.start_date, "yyyy-MM-dd") === format(date, "yyyy-MM-dd")
   );
 
   return (
