@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Pencil, Trash2, Copy } from "lucide-react";
+import { Plus, Pencil, Trash2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
 type Transaction = {
@@ -126,20 +126,6 @@ export const BudgetTransactions = () => {
     });
   };
 
-  const handleCopyTransaction = (transaction: Transaction) => {
-    const newTx: Transaction = {
-      ...transaction,
-      id: Date.now().toString(),
-      description: `${transaction.description} (Copy)`,
-      date: new Date().toISOString().split('T')[0],
-    };
-    setTransactions([newTx, ...transactions]);
-    toast({
-      title: "Success",
-      description: "Transaction copied successfully",
-    });
-  };
-
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
@@ -244,14 +230,6 @@ export const BudgetTransactions = () => {
                       className="h-8 w-8"
                     >
                       <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      onClick={() => handleCopyTransaction(tx)}
-                      className="h-8 w-8"
-                    >
-                      <Copy className="h-4 w-4" />
                     </Button>
                     <Button
                       size="icon"

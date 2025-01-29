@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Pencil, Trash2, Copy } from "lucide-react";
+import { Plus, Pencil, Trash2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
 type Category = {
@@ -89,19 +89,6 @@ export const BudgetCategories = () => {
     });
   };
 
-  const handleCopyCategory = (category: Category) => {
-    const newCategory = {
-      ...category,
-      name: `${category.name} (Copy)`,
-      spent: 0
-    };
-    setCategories([...categories, newCategory]);
-    toast({
-      title: "Success",
-      description: "Category copied successfully",
-    });
-  };
-
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
@@ -170,14 +157,6 @@ export const BudgetCategories = () => {
                     className="h-8 w-8"
                   >
                     <Pencil className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    onClick={() => handleCopyCategory(category)}
-                    className="h-8 w-8"
-                  >
-                    <Copy className="h-4 w-4" />
                   </Button>
                   <Button
                     size="icon"
