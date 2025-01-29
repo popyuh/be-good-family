@@ -136,7 +136,7 @@ export const ProfileSetup = () => {
           <label className="text-sm font-medium">Choose your avatar</label>
           <Select value={selectedEmoji} onValueChange={setSelectedEmoji}>
             <SelectTrigger>
-              <SelectValue />
+              <div className="text-2xl">{selectedEmoji}</div>
             </SelectTrigger>
             <SelectContent className="max-h-[300px]">
               <div className="grid grid-cols-4 gap-2 p-2">
