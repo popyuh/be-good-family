@@ -9,6 +9,7 @@ import Shopping from "./pages/Shopping";
 import Tasks from "./pages/Tasks";
 import Goals from "./pages/Goals";
 import Messages from "./pages/Messages";
+import Events from "./pages/Events";
 
 const queryClient = new QueryClient();
 
@@ -22,7 +23,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/shopping" element={<Shopping />} />
           <Route path="/tasks" element={<Tasks />} />
-          <Route path="/events" element={<NotFound />} />
+          <Route path="/events" element={<Events />} />
           <Route path="/goals" element={<Goals />} />
           <Route path="/budget" element={<NotFound />} />
           <Route path="/messages" element={<Messages />} />
