@@ -6,7 +6,8 @@ import {
   Target, 
   DollarSign,
   Home,
-  ShoppingCart
+  ShoppingCart,
+  MessageCircle
 } from "lucide-react";
 
 const navItems = [
@@ -16,6 +17,7 @@ const navItems = [
   { icon: Calendar, label: "Events", path: "/events" },
   { icon: Target, label: "Goals", path: "/goals" },
   { icon: DollarSign, label: "Budget", path: "/budget" },
+  { icon: MessageCircle, label: "Messages", path: "/messages" },
 ];
 
 export function Sidebar() {
