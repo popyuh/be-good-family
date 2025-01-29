@@ -15,17 +15,35 @@ export function EventCalendar() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const { toast } = useToast();
 
-  const { data: events = [], isLoading } = useQuery({
+  const { data: events = [], isLoading, error } = useQuery({
     queryKey: ["events"],
     queryFn: async () => {
-      console.log("Fetching events...");
-      const { data, error } = await supabase
-        .from("events")
-        .select("*")
-        .order("start_date", { ascending: true });
+      try {
+        console.log("Fetching events...");
+        const { data, error } = await supabase
+          .from("events")
+          .select("*")
+          .order("start_date", { ascending: true });
 
-      if (error) {
-        console.error("Error fetching events:", error);
+        if (error) {
+          console.error("Supabase error fetching events:", error);
+          throw error;
+        }
+
+        if (!data) {
+          console.log("No events found");
+          return [];
+        }
+
+        console.log("Successfully fetched events:", data);
+        return (data as Event[]).map(event => ({
+          ...event,
+          start_date: new Date(event.start_date),
+          end_date: event.end_date ? new Date(event.end_date) : undefined,
+          created_at: new Date(event.created_at),
+        }));
+      } catch (error: any) {
+        console.error("Error in events query:", error);
         toast({
           title: "Error loading events",
           description: error.message,
@@ -33,16 +51,14 @@ export function EventCalendar() {
         });
         throw error;
       }
-
-      console.log("Fetched events:", data);
-      return (data as Event[]).map(event => ({
-        ...event,
-        start_date: new Date(event.start_date),
-        end_date: event.end_date ? new Date(event.end_date) : undefined,
-        created_at: new Date(event.created_at),
-      }));
     },
+    retry: 3,
+    retryDelay: 1000,
   });
+
+  if (error) {
+    console.error("Query error state:", error);
+  }
 
   const selectedDateEvents = events.filter((event) => {
     if (!date || !event.start_date) return false;
@@ -80,6 +96,10 @@ export function EventCalendar() {
           <div className="flex items-center justify-center h-32">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
           </div>
+        ) : error ? (
+          <Card className="p-4 text-center text-destructive">
+            Error loading events. Please try again later.
+          </Card>
         ) : selectedDateEvents.length > 0 ? (
           <div className="space-y-4">
             {selectedDateEvents.map((event) => (
