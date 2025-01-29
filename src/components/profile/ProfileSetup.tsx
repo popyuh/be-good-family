@@ -21,12 +21,22 @@ const colorOptions: ColorOption[] = [
 ];
 
 const emojiOptions: EmojiOption[] = [
-  { emoji: "👤" },
-  { emoji: "😊" },
-  { emoji: "🌟" },
-  { emoji: "🎨" },
-  { emoji: "📚" },
-  { emoji: "💻" },
+  { emoji: "👩‍🎨" }, // Artist
+  { emoji: "🧑‍🎨" }, // Artist (gender-neutral)
+  { emoji: "👨‍🎨" }, // Artist (male)
+  { emoji: "🎭" },   // Theater/Arts
+  { emoji: "🦹‍♀️" }, // Superhero
+  { emoji: "🧙‍♀️" }, // Wizard
+  { emoji: "🧝‍♀️" }, // Elf
+  { emoji: "🧚‍♀️" }, // Fairy
+  { emoji: "👻" },   // Ghost
+  { emoji: "🦊" },   // Fox
+  { emoji: "🦁" },   // Lion
+  { emoji: "🐯" },   // Tiger
+  { emoji: "🦄" },   // Unicorn
+  { emoji: "🐉" },   // Dragon
+  { emoji: "🌟" },   // Star
+  { emoji: "🎨" },   // Art Palette
 ];
 
 export const ProfileSetup = () => {
@@ -123,17 +133,23 @@ export const ProfileSetup = () => {
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-medium">Choose your emoji</label>
+          <label className="text-sm font-medium">Choose your avatar</label>
           <Select value={selectedEmoji} onValueChange={setSelectedEmoji}>
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
-              {emojiOptions.map((option) => (
-                <SelectItem key={option.emoji} value={option.emoji}>
-                  <span className="text-xl">{option.emoji}</span>
-                </SelectItem>
-              ))}
+            <SelectContent className="max-h-[300px]">
+              <div className="grid grid-cols-4 gap-2 p-2">
+                {emojiOptions.map((option) => (
+                  <SelectItem 
+                    key={option.emoji} 
+                    value={option.emoji}
+                    className="flex items-center justify-center cursor-pointer hover:bg-accent rounded-lg p-2"
+                  >
+                    <span className="text-2xl">{option.emoji}</span>
+                  </SelectItem>
+                ))}
+              </div>
             </SelectContent>
           </Select>
         </div>
