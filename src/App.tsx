@@ -10,6 +10,7 @@ import Tasks from "./pages/Tasks";
 import Goals from "./pages/Goals";
 import Messages from "./pages/Messages";
 import Events from "./pages/Events";
+import Budget from "./pages/Budget";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -32,7 +33,7 @@ const App = () => (
           <Route path="/tasks" element={<Tasks />} />
           <Route path="/events" element={<Events />} />
           <Route path="/goals" element={<Goals />} />
-          <Route path="/budget" element={<NotFound />} />
+          <Route path="/budget" element={<Budget />} />
           <Route path="/messages" element={<Messages />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
