@@ -7,7 +7,6 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/lib/supabase";
 import { useQueryClient } from "@tanstack/react-query";
-import { format } from "date-fns";
 
 interface CreateEventDialogProps {
   open: boolean;
@@ -31,9 +30,17 @@ export function CreateEventDialog({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedDate) return;
+    if (!selectedDate) {
+      toast({
+        title: "Error",
+        description: "Please select a date first",
+        variant: "destructive",
+      });
+      return;
+    }
 
     setIsSubmitting(true);
+    console.log("Creating event...");
     
     try {
       const startDate = new Date(selectedDate);
@@ -44,16 +51,21 @@ export function CreateEventDialog({
       const [endHours, endMinutes] = endTime.split(":").map(Number);
       endDate.setHours(endHours, endMinutes);
 
-      const { error } = await supabase.from("events").insert({
+      const eventData = {
         title,
         description,
         start_date: startDate.toISOString(),
         end_date: endDate.toISOString(),
         created_at: new Date().toISOString(),
-      });
+      };
+
+      console.log("Event data:", eventData);
+
+      const { error } = await supabase.from("events").insert(eventData);
 
       if (error) throw error;
 
+      console.log("Event created successfully");
       toast({
         title: "Event created",
         description: "Your event has been successfully created.",
@@ -66,6 +78,7 @@ export function CreateEventDialog({
       setStartTime("09:00");
       setEndTime("10:00");
     } catch (error: any) {
+      console.error("Error creating event:", error);
       toast({
         title: "Error creating event",
         description: error.message,

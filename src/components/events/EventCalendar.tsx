@@ -18,12 +18,14 @@ export function EventCalendar() {
   const { data: events = [], isLoading } = useQuery({
     queryKey: ["events"],
     queryFn: async () => {
+      console.log("Fetching events...");
       const { data, error } = await supabase
         .from("events")
         .select("*")
         .order("start_date", { ascending: true });
 
       if (error) {
+        console.error("Error fetching events:", error);
         toast({
           title: "Error loading events",
           description: error.message,
@@ -32,6 +34,7 @@ export function EventCalendar() {
         throw error;
       }
 
+      console.log("Fetched events:", data);
       return (data as Event[]).map(event => ({
         ...event,
         start_date: new Date(event.start_date),
@@ -41,9 +44,15 @@ export function EventCalendar() {
     },
   });
 
-  const selectedDateEvents = events.filter(
-    (event) => date && format(event.start_date, "yyyy-MM-dd") === format(date, "yyyy-MM-dd")
-  );
+  const selectedDateEvents = events.filter((event) => {
+    if (!date || !event.start_date) return false;
+    try {
+      return format(event.start_date, "yyyy-MM-dd") === format(date, "yyyy-MM-dd");
+    } catch (error) {
+      console.error("Error formatting date:", error);
+      return false;
+    }
+  });
 
   return (
     <div className="flex flex-col md:flex-row gap-6">
