@@ -5,11 +5,13 @@ import {
   Calendar, 
   Target, 
   DollarSign,
-  Home
+  Home,
+  ShoppingCart
 } from "lucide-react";
 
 const navItems = [
   { icon: Home, label: "Dashboard", path: "/" },
+  { icon: ShoppingCart, label: "Shopping", path: "/shopping" },
   { icon: CheckSquare, label: "Tasks", path: "/tasks" },
   { icon: Calendar, label: "Events", path: "/events" },
   { icon: Target, label: "Goals", path: "/goals" },
