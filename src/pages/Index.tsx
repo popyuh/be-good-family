@@ -1,6 +1,7 @@
 import { Layout } from "@/components/layout/Layout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useEffect, useState } from "react";
 import { 
   CheckSquare, 
   Calendar, 
@@ -12,8 +13,10 @@ import {
   X,
   MessageCircle
 } from "lucide-react";
-import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { ProfileSetup } from "@/components/profile/ProfileSetup";
+import { supabase } from "@/lib/supabase";
+import { UserProfile } from "@/types/user";
 
 type StatItem = {
   icon: any;
@@ -64,6 +67,32 @@ const availableStats: StatItem[] = [
 const Index = () => {
   const [selectedStats, setSelectedStats] = useState<StatItem[]>(availableStats.slice(0, 4));
   const [isCustomizing, setIsCustomizing] = useState(false);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (user) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', user.id)
+            .single();
+          
+          setUserProfile(profile);
+        }
+      } catch (error) {
+        console.error('Error fetching profile:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProfile();
+  }, []);
 
   const handleAddStat = (stat: StatItem) => {
     setSelectedStats([...selectedStats, stat]);
@@ -72,6 +101,27 @@ const Index = () => {
   const handleRemoveStat = (statToRemove: StatItem) => {
     setSelectedStats(selectedStats.filter(stat => stat.label !== statToRemove.label));
   };
+
+  if (loading) {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      </Layout>
+    );
+  }
+
+  // Show profile setup if user is logged in but hasn't set up their profile
+  if (!userProfile) {
+    return (
+      <Layout>
+        <div className="max-w-5xl mx-auto pt-8">
+          <ProfileSetup />
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
