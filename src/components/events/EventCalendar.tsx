@@ -7,7 +7,7 @@ import { CreateEventDialog } from "./CreateEventDialog";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { Event } from "@/types/events";
-import { format } from "date-fns";
+import { format, isValid } from "date-fns";
 import { useToast } from "@/components/ui/use-toast";
 
 export function EventCalendar() {
@@ -19,53 +19,71 @@ export function EventCalendar() {
     queryKey: ["events"],
     queryFn: async () => {
       try {
-        console.log("Fetching events...");
+        console.log("Fetching events from Supabase...");
         const { data, error } = await supabase
           .from("events")
           .select("*")
           .order("start_date", { ascending: true });
 
         if (error) {
-          console.error("Supabase error fetching events:", error);
-          throw error;
+          console.error("Supabase error:", error);
+          throw new Error(error.message);
         }
 
         if (!data) {
-          console.log("No events found");
+          console.log("No events found in database");
           return [];
         }
 
-        console.log("Successfully fetched events:", data);
-        return (data as Event[]).map(event => ({
-          ...event,
-          start_date: new Date(event.start_date),
-          end_date: event.end_date ? new Date(event.end_date) : undefined,
-          created_at: new Date(event.created_at),
-        }));
+        console.log("Raw events data:", data);
+        
+        // Carefully parse and validate dates
+        return data.map((event: any) => {
+          const startDate = new Date(event.start_date);
+          const endDate = event.end_date ? new Date(event.end_date) : undefined;
+          const createdAt = new Date(event.created_at);
+
+          // Validate dates
+          if (!isValid(startDate)) {
+            console.error("Invalid start date for event:", event);
+            throw new Error("Invalid event date format");
+          }
+
+          return {
+            ...event,
+            start_date: startDate,
+            end_date: endDate && isValid(endDate) ? endDate : undefined,
+            created_at: isValid(createdAt) ? createdAt : new Date(),
+          };
+        });
       } catch (error: any) {
         console.error("Error in events query:", error);
         toast({
           title: "Error loading events",
-          description: error.message,
+          description: error.message || "Failed to load events",
           variant: "destructive",
         });
         throw error;
       }
     },
-    retry: 3,
-    retryDelay: 1000,
+    retry: 2,
+    retryDelay: (attemptIndex) => Math.min(1000 * (2 ** attemptIndex), 30000),
+    staleTime: 30000, // Cache data for 30 seconds
+    refetchOnWindowFocus: false,
   });
 
   if (error) {
-    console.error("Query error state:", error);
+    console.error("Query error details:", error);
   }
 
   const selectedDateEvents = events.filter((event) => {
     if (!date || !event.start_date) return false;
     try {
-      return format(event.start_date, "yyyy-MM-dd") === format(date, "yyyy-MM-dd");
+      const eventDate = format(event.start_date, "yyyy-MM-dd");
+      const selectedDate = format(date, "yyyy-MM-dd");
+      return eventDate === selectedDate;
     } catch (error) {
-      console.error("Error formatting date:", error);
+      console.error("Error comparing dates:", error);
       return false;
     }
   });
@@ -86,7 +104,10 @@ export function EventCalendar() {
           <h2 className="text-2xl font-semibold">
             Events for {date ? format(date, "MMMM d, yyyy") : "Selected Date"}
           </h2>
-          <Button onClick={() => setIsCreateDialogOpen(true)}>
+          <Button 
+            onClick={() => setIsCreateDialogOpen(true)}
+            disabled={!date}
+          >
             <Plus className="w-4 h-4 mr-2" />
             Add Event
           </Button>
@@ -98,7 +119,8 @@ export function EventCalendar() {
           </div>
         ) : error ? (
           <Card className="p-4 text-center text-destructive">
-            Error loading events. Please try again later.
+            <p>Error loading events. Please try again later.</p>
+            <p className="text-sm mt-2">{error instanceof Error ? error.message : 'Unknown error'}</p>
           </Card>
         ) : selectedDateEvents.length > 0 ? (
           <div className="space-y-4">

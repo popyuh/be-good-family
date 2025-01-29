@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/lib/supabase";
 import { useQueryClient } from "@tanstack/react-query";
+import { isValid, parseISO } from "date-fns";
 
 interface CreateEventDialogProps {
   open: boolean;
@@ -30,6 +31,7 @@ export function CreateEventDialog({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
     if (!selectedDate) {
       toast({
         title: "Error",
@@ -40,9 +42,10 @@ export function CreateEventDialog({
     }
 
     setIsSubmitting(true);
-    console.log("Creating event...");
+    console.log("Creating new event...");
     
     try {
+      // Create and validate dates
       const startDate = new Date(selectedDate);
       const [startHours, startMinutes] = startTime.split(":").map(Number);
       startDate.setHours(startHours, startMinutes);
@@ -50,6 +53,15 @@ export function CreateEventDialog({
       const endDate = new Date(selectedDate);
       const [endHours, endMinutes] = endTime.split(":").map(Number);
       endDate.setHours(endHours, endMinutes);
+
+      // Validate dates
+      if (!isValid(startDate) || !isValid(endDate)) {
+        throw new Error("Invalid date format");
+      }
+
+      if (endDate < startDate) {
+        throw new Error("End time must be after start time");
+      }
 
       const eventData = {
         title,
@@ -59,19 +71,24 @@ export function CreateEventDialog({
         created_at: new Date().toISOString(),
       };
 
-      console.log("Event data:", eventData);
+      console.log("Submitting event data:", eventData);
 
-      const { error } = await supabase.from("events").insert(eventData);
+      const { error: supabaseError } = await supabase
+        .from("events")
+        .insert(eventData);
 
-      if (error) throw error;
+      if (supabaseError) throw supabaseError;
 
       console.log("Event created successfully");
       toast({
-        title: "Event created",
-        description: "Your event has been successfully created.",
+        title: "Success",
+        description: "Event has been created successfully.",
       });
 
-      queryClient.invalidateQueries({ queryKey: ["events"] });
+      // Invalidate and refetch events
+      await queryClient.invalidateQueries({ queryKey: ["events"] });
+      
+      // Reset form and close dialog
       onOpenChange(false);
       setTitle("");
       setDescription("");
@@ -81,7 +98,7 @@ export function CreateEventDialog({
       console.error("Error creating event:", error);
       toast({
         title: "Error creating event",
-        description: error.message,
+        description: error.message || "Failed to create event",
         variant: "destructive",
       });
     } finally {
@@ -147,7 +164,7 @@ export function CreateEventDialog({
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
+            <Button type="submit" disabled={isSubmitting || !selectedDate}>
               {isSubmitting ? "Creating..." : "Create Event"}
             </Button>
           </div>
