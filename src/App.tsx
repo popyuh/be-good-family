@@ -8,6 +8,7 @@ import NotFound from "./pages/NotFound";
 import Shopping from "./pages/Shopping";
 import Tasks from "./pages/Tasks";
 import Goals from "./pages/Goals";
+import Messages from "./pages/Messages";
 
 const queryClient = new QueryClient();
 
@@ -24,6 +25,7 @@ const App = () => (
           <Route path="/events" element={<NotFound />} />
           <Route path="/goals" element={<Goals />} />
           <Route path="/budget" element={<NotFound />} />
+          <Route path="/messages" element={<Messages />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

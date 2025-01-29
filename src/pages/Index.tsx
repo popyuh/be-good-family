@@ -9,7 +9,8 @@ import {
   ShoppingCart,
   Settings,
   Plus,
-  X
+  X,
+  MessageCircle
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -51,6 +52,12 @@ const availableStats: StatItem[] = [
     label: "Shopping",
     value: "3 items",
     path: "/shopping"
+  },
+  {
+    icon: MessageCircle,
+    label: "Messages",
+    value: "2 groups",
+    path: "/messages"
   }
 ];
 
