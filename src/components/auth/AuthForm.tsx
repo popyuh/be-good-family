@@ -24,7 +24,8 @@ export function AuthForm() {
     checkSession();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log("Auth state changed:", event, session ? "Authenticated" : "Not authenticated");
+      console.log("Auth state changed - Event:", event);
+      console.log("Auth state changed - Session:", session ? "Present" : "None");
       if (session) navigate('/');
     });
 
@@ -32,7 +33,10 @@ export function AuthForm() {
   }, [navigate]);
 
   const validateInputs = () => {
+    console.log("Validating inputs - Email:", email, "Password length:", password.length);
+    
     if (!email || !password) {
+      console.log("Validation failed: Missing email or password");
       toast({
         title: "Error",
         description: "Please fill in all fields",
@@ -40,7 +44,9 @@ export function AuthForm() {
       });
       return false;
     }
+    
     if (password.length < 6) {
+      console.log("Validation failed: Password too short");
       toast({
         title: "Error",
         description: "Password must be at least 6 characters long",
@@ -48,11 +54,15 @@ export function AuthForm() {
       });
       return false;
     }
+    
+    console.log("Input validation passed");
     return true;
   };
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("Starting auth process...");
+    console.log("Mode:", isSignUp ? "Sign Up" : "Sign In");
     
     if (!validateInputs()) return;
     
@@ -66,13 +76,18 @@ export function AuthForm() {
           password,
           options: {
             emailRedirectTo: `${window.location.origin}/auth/callback`,
+            data: {
+              email,
+            },
           },
         });
 
-        if (error) throw error;
+        console.log("Sign up response - Data:", data);
+        if (error) {
+          console.error("Sign up error:", error);
+          throw error;
+        }
 
-        console.log("Sign up response:", data);
-        
         toast({
           title: "Success",
           description: "Please check your email to verify your account",
@@ -80,12 +95,16 @@ export function AuthForm() {
         
       } else {
         console.log("Attempting sign in with email:", email);
-        const { error } = await supabase.auth.signInWithPassword({
+        const { data, error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
 
-        if (error) throw error;
+        console.log("Sign in response - Data:", data);
+        if (error) {
+          console.error("Sign in error:", error);
+          throw error;
+        }
 
         toast({
           title: "Success",
@@ -93,10 +112,13 @@ export function AuthForm() {
         });
       }
     } catch (error) {
-      console.error("Auth error:", error);
+      console.error("Auth error details:", error);
       
       let errorMessage = "An error occurred during authentication.";
       if (error instanceof Error) {
+        console.log("Error type:", error.constructor.name);
+        console.log("Error message:", error.message);
+        
         if (error.message.includes("Email not confirmed")) {
           errorMessage = "Please check your email and confirm your account.";
         } else if (error.message.includes("Invalid login credentials")) {
@@ -115,6 +137,7 @@ export function AuthForm() {
       });
     } finally {
       setIsLoading(false);
+      console.log("Auth process completed");
     }
   };
 
