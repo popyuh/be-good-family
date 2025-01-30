@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
-import { Settings } from "lucide-react";
+import { Settings, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ProfileSetup } from "@/components/profile/ProfileSetup";
 import { FamilySetup } from "@/components/family/FamilySetup";
@@ -11,12 +11,16 @@ import { useProfile } from "@/hooks/use-profile";
 import { useFamily } from "@/hooks/use-family";
 import { AuthForm } from "@/components/auth/AuthForm";
 import { supabase } from "@/lib/supabase";
+import { useToast } from "@/components/ui/use-toast";
+import { useNavigate } from "react-router-dom";
 
 const Index = () => {
   const [isCustomizing, setIsCustomizing] = useState(false);
   const [session, setSession] = useState<any>(null);
   const { data: profile, isLoading: profileLoading, refetch: refetchProfile } = useProfile();
   const { data: familyData, isLoading: familyLoading } = useFamily();
+  const { toast } = useToast();
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Check and set initial session
@@ -35,6 +39,27 @@ const Index = () => {
 
     return () => subscription.unsubscribe();
   }, []);
+
+  const handleLogout = async () => {
+    try {
+      console.log("Attempting to log out...");
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      
+      toast({
+        title: "Success",
+        description: "You have been logged out successfully",
+      });
+      navigate('/');
+    } catch (error) {
+      console.error("Logout error:", error);
+      toast({
+        title: "Error",
+        description: "Failed to log out. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
   console.log("Current profile data:", profile);
   console.log("Profile loading:", profileLoading);
@@ -92,17 +117,27 @@ const Index = () => {
       <div className="max-w-5xl mx-auto">
         <div className="flex justify-between items-center mb-6 md:mb-8">
           <h1 className="text-2xl md:text-4xl font-bold">Welcome Back, {profile.name}!</h1>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setIsCustomizing(!isCustomizing)}
-            className={cn(
-              "transition-colors",
-              isCustomizing && "bg-primary"
-            )}
-          >
-            <Settings className="h-5 w-5" />
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsCustomizing(!isCustomizing)}
+              className={cn(
+                "transition-colors",
+                isCustomizing && "bg-primary"
+              )}
+            >
+              <Settings className="h-5 w-5" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleLogout}
+              className="text-red-500 hover:text-red-600 hover:bg-red-50"
+            >
+              <LogOut className="h-5 w-5" />
+            </Button>
+          </div>
         </div>
         
         <DashboardStats 
