@@ -5,4 +5,5 @@ export type Event = {
   start_date: Date;
   end_date?: Date;
   created_at: Date;
+  user_id: string;
 };
