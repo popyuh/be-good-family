@@ -26,7 +26,7 @@ export const AvatarUpload = ({ currentAvatarUrl, onUploadComplete }: AvatarUploa
     try {
       const { data, error } = await supabase
         .storage
-        .from('avatars')
+        .from('ProfilePic')
         .createSignedUrl(path, 3600); // 1 hour expiry
 
       if (error) {
@@ -77,7 +77,7 @@ export const AvatarUpload = ({ currentAvatarUrl, onUploadComplete }: AvatarUploa
       const fileName = `${userId}/${Date.now()}.${fileExt}`;
 
       const { error: uploadError, data } = await supabase.storage
-        .from('avatars')
+        .from('ProfilePic')
         .upload(fileName, file, { upsert: true });
 
       if (uploadError) {
@@ -86,7 +86,7 @@ export const AvatarUpload = ({ currentAvatarUrl, onUploadComplete }: AvatarUploa
 
       // Get a signed URL for the uploaded file
       const { data: urlData, error: urlError } = await supabase.storage
-        .from('avatars')
+        .from('ProfilePic')
         .createSignedUrl(fileName, 3600); // 1 hour expiry
 
       if (urlError) {
