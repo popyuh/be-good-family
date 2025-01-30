@@ -31,13 +31,36 @@ export function AuthForm() {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
+  const validateInputs = () => {
+    if (!email || !password) {
+      toast({
+        title: "Error",
+        description: "Please fill in all fields",
+        variant: "destructive",
+      });
+      return false;
+    }
+    if (password.length < 6) {
+      toast({
+        title: "Error",
+        description: "Password must be at least 6 characters long",
+        variant: "destructive",
+      });
+      return false;
+    }
+    return true;
+  };
+
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!validateInputs()) return;
+    
     setIsLoading(true);
     
     try {
       if (isSignUp) {
-        console.log("Attempting sign up...");
+        console.log("Attempting sign up with email:", email);
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
@@ -50,29 +73,24 @@ export function AuthForm() {
 
         console.log("Sign up response:", data);
         
-        if (data.user && !data.session) {
-          toast({
-            title: "Verify your email",
-            description: "Please check your email to complete registration.",
-          });
-        } else {
-          toast({
-            title: "Account created",
-            description: "You can now sign in with your credentials.",
-          });
-        }
-        
-        setEmail("");
-        setPassword("");
+        toast({
+          title: "Success",
+          description: "Please check your email to verify your account",
+        });
         
       } else {
-        console.log("Attempting sign in...");
+        console.log("Attempting sign in with email:", email);
         const { error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
 
         if (error) throw error;
+
+        toast({
+          title: "Success",
+          description: "Successfully signed in",
+        });
       }
     } catch (error) {
       console.error("Auth error:", error);
@@ -103,7 +121,7 @@ export function AuthForm() {
   return (
     <Card className="p-4 md:p-6 max-w-md mx-auto">
       <form onSubmit={handleAuth} className="space-y-4">
-        <h2 className="text-xl md:text-2xl font-bold">Welcome to Family Hub</h2>
+        <h2 className="text-xl md:text-2xl font-bold">Welcome to BeGoodFamily</h2>
         <p className="text-muted-foreground">
           {isSignUp ? "Create an account to get started." : "Sign in to your account."}
         </p>
