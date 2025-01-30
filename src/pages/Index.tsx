@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Settings } from "lucide-react";
@@ -9,16 +9,47 @@ import { DashboardStats } from "@/components/dashboard/DashboardStats";
 import { availableStats } from "@/config/dashboard";
 import { useProfile } from "@/hooks/use-profile";
 import { useFamily } from "@/hooks/use-family";
+import { AuthForm } from "@/components/auth/AuthForm";
+import { supabase } from "@/lib/supabase";
 
 const Index = () => {
   const [isCustomizing, setIsCustomizing] = useState(false);
+  const [session, setSession] = useState<any>(null);
   const { data: profile, isLoading: profileLoading, refetch: refetchProfile } = useProfile();
   const { data: familyData, isLoading: familyLoading } = useFamily();
+
+  useEffect(() => {
+    // Check and set initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log("Initial session check:", session ? "Authenticated" : "Not authenticated");
+      setSession(session);
+    });
+
+    // Listen for auth changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      console.log("Auth state changed:", session ? "Authenticated" : "Not authenticated");
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   console.log("Current profile data:", profile);
   console.log("Profile loading:", profileLoading);
   console.log("Family data:", familyData);
   console.log("Family loading:", familyLoading);
+
+  if (!session) {
+    return (
+      <Layout>
+        <div className="max-w-5xl mx-auto pt-8">
+          <AuthForm />
+        </div>
+      </Layout>
+    );
+  }
 
   if (profileLoading || familyLoading) {
     return (
