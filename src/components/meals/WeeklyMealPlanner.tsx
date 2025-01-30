@@ -18,16 +18,26 @@ export const WeeklyMealPlanner = () => {
   const [editedName, setEditedName] = useState("");
   const isMobile = useIsMobile();
 
-  const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-  const fullDayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+  const daysOfWeek = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  const fullDayNames = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
   const mealTypes: MealType[] = ["breakfast", "lunch", "dinner"];
+
+  // Convert Sunday-based index (0-6) to Monday-based index (0-6)
+  const convertToMondayBasedIndex = (sundayBasedIndex: number) => {
+    return (sundayBasedIndex + 6) % 7;
+  };
+
+  // Convert Monday-based index (0-6) to Sunday-based index (0-6)
+  const convertToSundayBasedIndex = (mondayBasedIndex: number) => {
+    return (mondayBasedIndex + 1) % 7;
+  };
 
   const addMeal = (dayOfWeek: number, type: MealType) => {
     const newMeal: Meal = {
       id: `${Date.now()}`,
       type,
       name: "",
-      dayOfWeek,
+      dayOfWeek: convertToSundayBasedIndex(dayOfWeek), // Convert to Sunday-based index for storage
     };
     setMeals([...meals, newMeal]);
     setEditingMeal(newMeal.id);
@@ -58,8 +68,9 @@ export const WeeklyMealPlanner = () => {
     });
   };
 
-  const getMealsForDay = (dayIndex: number) => {
-    return meals.filter((meal) => meal.dayOfWeek === dayIndex);
+  const getMealsForDay = (mondayBasedIndex: number) => {
+    const sundayBasedIndex = convertToSundayBasedIndex(mondayBasedIndex);
+    return meals.filter((meal) => meal.dayOfWeek === sundayBasedIndex);
   };
 
   const renderMealList = (dayMeals: Meal[]) => {
