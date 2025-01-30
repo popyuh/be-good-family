@@ -69,9 +69,13 @@ export const ProfileSetup = ({ onComplete }: ProfileSetupProps) => {
     try {
       const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
       
-      if (sessionError) throw sessionError;
+      if (sessionError) {
+        console.error('Session error:', sessionError);
+        throw sessionError;
+      }
       
       if (!sessionData.session?.user) {
+        console.error('No user session found');
         toast({
           title: "Error",
           description: "No user found. Please sign in again.",
@@ -91,9 +95,14 @@ export const ProfileSetup = ({ onComplete }: ProfileSetupProps) => {
           name: name.trim(),
           color: selectedColor,
           emoji: selectedEmoji,
+        }, {
+          onConflict: 'id'
         });
 
-      if (profileError) throw profileError;
+      if (profileError) {
+        console.error('Profile update error:', profileError);
+        throw profileError;
+      }
 
       console.log("Profile updated successfully");
       
@@ -107,11 +116,22 @@ export const ProfileSetup = ({ onComplete }: ProfileSetupProps) => {
 
       // Call onComplete callback if provided
       if (onComplete) {
-        onComplete();
+        await onComplete();
       }
 
-      // Navigate to dashboard
-      navigate("/");
+      // Ensure we have the latest session before navigating
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        console.log("Navigation to dashboard...");
+        navigate("/");
+      } else {
+        console.error("No valid session found after profile update");
+        toast({
+          title: "Error",
+          description: "Please sign in again",
+          variant: "destructive",
+        });
+      }
       
     } catch (error) {
       console.error('Error updating profile:', error);
