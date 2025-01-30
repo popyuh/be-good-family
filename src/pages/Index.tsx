@@ -15,6 +15,11 @@ const Index = () => {
   const { data: profile, isLoading: profileLoading, refetch: refetchProfile } = useProfile();
   const { data: familyData, isLoading: familyLoading } = useFamily();
 
+  console.log("Current profile data:", profile);
+  console.log("Profile loading:", profileLoading);
+  console.log("Family data:", familyData);
+  console.log("Family loading:", familyLoading);
+
   if (profileLoading || familyLoading) {
     return (
       <Layout>
@@ -26,6 +31,7 @@ const Index = () => {
   }
 
   if (!profile) {
+    console.log("No profile found, showing ProfileSetup");
     return (
       <Layout>
         <div className="max-w-5xl mx-auto pt-8">

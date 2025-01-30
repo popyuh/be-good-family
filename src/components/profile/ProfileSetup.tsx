@@ -12,6 +12,7 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { ColorOption, EmojiOption } from "@/types/user";
 import { supabase } from "@/lib/supabase";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface ProfileSetupProps {
   onComplete?: () => void;
@@ -48,6 +49,7 @@ export const ProfileSetup = ({ onComplete }: ProfileSetupProps) => {
   const [name, setName] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const handleSubmit = async () => {
     if (!name.trim()) {
@@ -92,12 +94,14 @@ export const ProfileSetup = ({ onComplete }: ProfileSetupProps) => {
 
       console.log("Profile updated successfully");
       
+      // Invalidate and refetch profile data
+      await queryClient.invalidateQueries({ queryKey: ["profile"] });
+      
       toast({
         title: "Success",
         description: "Profile updated successfully!",
       });
 
-      // Call onComplete callback instead of reloading the page
       if (onComplete) {
         onComplete();
       }
