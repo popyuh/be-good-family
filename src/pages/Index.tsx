@@ -12,7 +12,7 @@ import { useFamily } from "@/hooks/use-family";
 
 const Index = () => {
   const [isCustomizing, setIsCustomizing] = useState(false);
-  const { data: profile, isLoading: profileLoading } = useProfile();
+  const { data: profile, isLoading: profileLoading, refetch: refetchProfile } = useProfile();
   const { data: familyData, isLoading: familyLoading } = useFamily();
 
   if (profileLoading || familyLoading) {
@@ -29,7 +29,7 @@ const Index = () => {
     return (
       <Layout>
         <div className="max-w-5xl mx-auto pt-8">
-          <ProfileSetup />
+          <ProfileSetup onComplete={refetchProfile} />
         </div>
       </Layout>
     );
@@ -49,7 +49,7 @@ const Index = () => {
     <Layout>
       <div className="max-w-5xl mx-auto">
         <div className="flex justify-between items-center mb-6 md:mb-8">
-          <h1 className="text-2xl md:text-4xl font-bold">Welcome Back, Family!</h1>
+          <h1 className="text-2xl md:text-4xl font-bold">Welcome Back, {profile.name}!</h1>
           <Button
             variant="ghost"
             size="icon"

@@ -13,6 +13,10 @@ import { useToast } from "@/components/ui/use-toast";
 import { ColorOption, EmojiOption } from "@/types/user";
 import { supabase } from "@/lib/supabase";
 
+interface ProfileSetupProps {
+  onComplete?: () => void;
+}
+
 const colorOptions = [
   { name: "Purple", value: "#9b87f5" },
   { name: "Blue", value: "#0EA5E9" },
@@ -38,7 +42,7 @@ const emojiOptions: EmojiOption[] = [
   { emoji: "🦭", id: "seal" },
 ];
 
-export const ProfileSetup = () => {
+export const ProfileSetup = ({ onComplete }: ProfileSetupProps) => {
   const [selectedColor, setSelectedColor] = useState<string>(colorOptions[0].value);
   const [selectedEmoji, setSelectedEmoji] = useState<string>(emojiOptions[0].emoji);
   const [name, setName] = useState<string>("");
@@ -93,8 +97,10 @@ export const ProfileSetup = () => {
         description: "Profile updated successfully!",
       });
 
-      // Reload the page to reflect changes
-      window.location.reload();
+      // Call onComplete callback instead of reloading the page
+      if (onComplete) {
+        onComplete();
+      }
     } catch (error) {
       console.error('Error updating profile:', error);
       toast({
