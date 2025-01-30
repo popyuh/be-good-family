@@ -5,12 +5,14 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase";
 import { CreateFamilyForm } from "./CreateFamilyForm";
 import { JoinFamilyForm } from "./JoinFamilyForm";
+import { useProfile } from "@/hooks/use-profile";
 
 export const FamilySetup = () => {
   const [isFirstUser, setIsFirstUser] = useState(true);
   const [retryCount, setRetryCount] = useState(0);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { data: profile, isLoading: profileLoading } = useProfile();
 
   const checkExistingFamily = async () => {
     try {
@@ -18,6 +20,12 @@ export const FamilySetup = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         console.log("No user found");
+        return;
+      }
+
+      if (!profile) {
+        console.log("No profile found, redirecting to profile setup");
+        navigate('/profile-setup');
         return;
       }
 
@@ -78,8 +86,20 @@ export const FamilySetup = () => {
   };
 
   useEffect(() => {
-    checkExistingFamily();
-  }, [retryCount]);
+    if (!profileLoading) {
+      checkExistingFamily();
+    }
+  }, [retryCount, profileLoading, profile]);
+
+  if (profileLoading) {
+    return (
+      <Card className="p-6 max-w-md mx-auto">
+        <div className="flex items-center justify-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      </Card>
+    );
+  }
 
   const handleSuccess = () => {
     console.log("Family setup successful, navigating to home...");
