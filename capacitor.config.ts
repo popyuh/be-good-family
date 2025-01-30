@@ -5,7 +5,8 @@ const config: CapacitorConfig = {
   appName: 'Our Family Hub',
   webDir: 'dist',
   server: {
-    url: 'https://64c8227a-31ed-4c8a-9c20-b7719b894027.lovableproject.com?forceHideBadge=true',
+    androidScheme: 'http',
+    url: 'http://localhost:8080',
     cleartext: true
   },
   bundledWebRuntime: false
