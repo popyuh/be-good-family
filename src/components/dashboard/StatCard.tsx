@@ -54,19 +54,17 @@ export const StatCard = ({
           <X className="h-4 w-4" />
         </Button>
       )}
-      <div className="flex h-full flex-col p-4 md:p-6">
-        <div className="flex items-start gap-3 md:gap-4">
-          <div className="p-2 gradient-bg rounded-lg shrink-0">
-            <Icon size={20} className="h-5 w-5 md:h-6 md:w-6" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <h3 className="font-semibold text-sm md:text-base mb-1">
-              {label}
-            </h3>
-            <p className="text-xs md:text-sm text-muted-foreground">
-              {value}
-            </p>
-          </div>
+      <div className="flex h-full flex-col items-center justify-center p-4 md:p-6 space-y-3 md:space-y-4">
+        <div className="p-3 md:p-4 gradient-bg rounded-lg">
+          <Icon className="h-6 w-6 md:h-8 md:w-8" />
+        </div>
+        <div className="text-center">
+          <h3 className="font-semibold text-sm md:text-base mb-1">
+            {label}
+          </h3>
+          <p className="text-xs md:text-sm text-muted-foreground">
+            {value}
+          </p>
         </div>
       </div>
     </Card>
