@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
-import { Settings, LogOut } from "lucide-react";
+import { Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ProfileSetup } from "@/components/profile/ProfileSetup";
 import { FamilySetup } from "@/components/family/FamilySetup";
@@ -11,8 +11,6 @@ import { useProfile } from "@/hooks/use-profile";
 import { useFamily } from "@/hooks/use-family";
 import { AuthForm } from "@/components/auth/AuthForm";
 import { supabase } from "@/lib/supabase";
-import { useToast } from "@/components/ui/use-toast";
-import { useNavigate } from "react-router-dom";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,8 +23,6 @@ const Index = () => {
   const [session, setSession] = useState<any>(null);
   const { data: profile, isLoading: profileLoading, refetch: refetchProfile } = useProfile();
   const { data: familyData, isLoading: familyLoading } = useFamily();
-  const { toast } = useToast();
-  const navigate = useNavigate();
 
   useEffect(() => {
     // Check and set initial session
@@ -45,27 +41,6 @@ const Index = () => {
 
     return () => subscription.unsubscribe();
   }, []);
-
-  const handleLogout = async () => {
-    try {
-      console.log("Attempting to log out...");
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-      
-      toast({
-        title: "Success",
-        description: "You have been logged out successfully",
-      });
-      navigate('/');
-    } catch (error) {
-      console.error("Logout error:", error);
-      toast({
-        title: "Error",
-        description: "Failed to log out. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
 
   console.log("Current profile data:", profile);
   console.log("Profile loading:", profileLoading);
@@ -139,13 +114,6 @@ const Index = () => {
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={() => setIsCustomizing(!isCustomizing)}>
                 {isCustomizing ? "Done Customizing" : "Customize Dashboard"}
-              </DropdownMenuItem>
-              <DropdownMenuItem 
-                onClick={handleLogout}
-                className="text-red-500 focus:text-red-500 focus:bg-red-50"
-              >
-                <LogOut className="h-4 w-4 mr-2" />
-                Logout
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
