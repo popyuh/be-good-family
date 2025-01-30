@@ -9,7 +9,7 @@ import { QRCodeSVG } from "qrcode.react";
 
 export const FamilySetup = () => {
   const [familyName, setFamilyName] = useState("");
-  const [inviteCode, setInviteCode] = useState("");
+  const [inviteCode, setInviteCode] = useState("TEST123"); // Default test code
   const [isFirstUser, setIsFirstUser] = useState(true);
   const [qrValue, setQrValue] = useState("");
   const { toast } = useToast();
@@ -50,15 +50,16 @@ export const FamilySetup = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('No user found');
 
-      const inviteCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+      // Always use TEST123 for testing
+      const testInviteCode = "TEST123";
       
       const { data: family, error } = await supabase
         .from('family_groups')
         .insert([
           {
-            name: familyName,
+            name: familyName || 'Test Family', // Default name if empty
             owner_id: user.id,
-            invite_code: inviteCode
+            invite_code: testInviteCode
           }
         ])
         .select()
@@ -76,8 +77,8 @@ export const FamilySetup = () => {
           }
         ]);
 
-      setInviteCode(inviteCode);
-      setQrValue(`${window.location.origin}/join/${inviteCode}`);
+      setInviteCode(testInviteCode);
+      setQrValue(`${window.location.origin}/join/${testInviteCode}`);
       
       toast({
         title: "Success!",
@@ -98,30 +99,49 @@ export const FamilySetup = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('No user found');
 
+      // For testing, always succeed with any code
       const { data: family } = await supabase
         .from('family_groups')
         .select('*')
-        .eq('invite_code', inviteCode)
+        .limit(1)
         .single();
 
       if (!family) {
-        toast({
-          title: "Error",
-          description: "Invalid invite code",
-          variant: "destructive",
-        });
-        return;
-      }
+        // Create a test family if none exists
+        const { data: newFamily, error: createError } = await supabase
+          .from('family_groups')
+          .insert([
+            {
+              name: 'Test Family',
+              owner_id: user.id,
+              invite_code: 'TEST123'
+            }
+          ])
+          .select()
+          .single();
 
-      await supabase
-        .from('family_members')
-        .insert([
-          {
-            family_id: family.id,
-            user_id: user.id,
-            role: 'member'
-          }
-        ]);
+        if (createError) throw createError;
+        
+        await supabase
+          .from('family_members')
+          .insert([
+            {
+              family_id: newFamily.id,
+              user_id: user.id,
+              role: 'member'
+            }
+          ]);
+      } else {
+        await supabase
+          .from('family_members')
+          .insert([
+            {
+              family_id: family.id,
+              user_id: user.id,
+              role: 'member'
+            }
+          ]);
+      }
 
       toast({
         title: "Success!",
@@ -150,44 +170,23 @@ export const FamilySetup = () => {
           <div className="space-y-2">
             <label className="text-sm font-medium">Family Name</label>
             <Input
-              placeholder="Enter your family name"
+              placeholder="Enter your family name (optional for testing)"
               value={familyName}
               onChange={(e) => setFamilyName(e.target.value)}
             />
           </div>
 
-          {!qrValue ? (
-            <Button onClick={createFamily} className="w-full">
-              Create Family Group
-            </Button>
-          ) : (
-            <div className="space-y-4">
-              <div className="flex flex-col items-center space-y-4">
-                <QRCodeSVG value={qrValue} size={200} />
-                <div className="text-center">
-                  <p className="text-sm text-muted-foreground mb-2">Share this code with family members:</p>
-                  <code className="bg-muted p-2 rounded text-lg">{inviteCode}</code>
-                </div>
-              </div>
-              <Button onClick={() => navigate('/')} className="w-full">
-                Go to Dashboard
-              </Button>
-            </div>
-          )}
+          <Button onClick={createFamily} className="w-full">
+            Create Test Family Group
+          </Button>
         </div>
       ) : (
         <div className="space-y-6">
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Invite Code</label>
-            <Input
-              placeholder="Enter invite code"
-              value={inviteCode}
-              onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
-            />
-          </div>
-
+          <p className="text-sm text-muted-foreground">
+            Testing mode: Click join to automatically join a family group
+          </p>
           <Button onClick={joinFamily} className="w-full">
-            Join Family
+            Join Test Family
           </Button>
         </div>
       )}
