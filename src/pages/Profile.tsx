@@ -9,7 +9,8 @@ import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/lib/supabase";
 import { AvatarUpload } from "@/components/profile/AvatarUpload";
 import { Link } from "react-router-dom";
-import { Pencil, Save, X } from "lucide-react";
+import { Pencil, Save, X, Upload } from "lucide-react";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 export default function Profile() {
   const { data: profile, isLoading, refetch } = useProfile();
