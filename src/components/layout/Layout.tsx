@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Sidebar } from "./Sidebar";
-import { Menu, X } from "lucide-react";
+import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Link, useLocation } from "react-router-dom";
 
-// Navigation items (matching sidebar items)
 const navigationItems = [
   { to: "/", icon: "Home", label: "Dashboard" },
   { to: "/events", icon: "Calendar", label: "Events" },
@@ -29,7 +28,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const isMobile = useIsMobile();
   const location = useLocation();
 
-  // Close mobile dropdown on route change
   useEffect(() => {
     if (isMobile) {
       setIsDropdownOpen(false);
@@ -37,8 +35,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   }, [location.pathname, isMobile]);
 
   return (
-    <div className="flex min-h-screen bg-background">
-      {/* Mobile Dropdown Menu */}
+    <div className="flex min-h-screen max-w-full overflow-x-hidden bg-background">
       {isMobile ? (
         <div className="fixed top-4 left-4 z-50">
           <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
@@ -66,7 +63,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </DropdownMenu>
         </div>
       ) : (
-        /* Desktop Sidebar */
         <div
           className={`
             relative transform transition-transform duration-300 ease-in-out
@@ -77,15 +73,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
         </div>
       )}
 
-      {/* Main content */}
       <main 
         className={`
           flex-1 p-4 md:p-8 pt-16 md:pt-8 
-          transition-all duration-300
+          transition-all duration-300 overflow-x-hidden
           ${isSidebarOpen && !isMobile ? "md:ml-64" : "md:ml-0"}
         `}
       >
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-7xl mx-auto w-full px-4 md:px-8">
           {children}
         </div>
       </main>

@@ -33,8 +33,15 @@ export const DashboardStats = ({ availableStats, isCustomizing }: DashboardStats
     stat => !selectedStats.find(s => s.label === stat.label)
   );
 
+  const handleKeyPress = (e: React.KeyboardEvent, action: () => void) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      action();
+    }
+  };
+
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full">
       {selectedStats.map((stat) => (
         <StatCard
           key={stat.label}
@@ -52,18 +59,20 @@ export const DashboardStats = ({ availableStats, isCustomizing }: DashboardStats
           <DropdownMenuTrigger asChild>
             <Button 
               variant="outline" 
-              className="h-full min-h-[120px] border-dashed flex flex-col gap-2 hover:bg-accent"
+              className="h-full min-h-[120px] border-dashed flex flex-col gap-2 hover:bg-accent w-full"
+              onKeyPress={(e) => handleKeyPress(e, () => {})}
             >
               <Plus className="h-6 w-6" />
               <Menu className="h-6 w-6" />
               <span className="text-sm">Add Category</span>
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
+          <DropdownMenuContent align="end" className="w-56">
             {availableToAdd.map((stat) => (
               <DropdownMenuItem
                 key={stat.label}
                 onClick={() => handleAddStat(stat)}
+                onKeyPress={(e) => handleKeyPress(e, () => handleAddStat(stat))}
                 className="cursor-pointer"
               >
                 <stat.icon className="mr-2 h-4 w-4" />

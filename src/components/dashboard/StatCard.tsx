@@ -20,10 +20,20 @@ export const StatCard = ({
   isCustomizing,
   onRemove 
 }: StatCardProps) => {
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !isCustomizing) {
+      window.location.href = path;
+    }
+  };
+
   return (
     <Card 
-      className="p-4 md:p-6 card-hover cursor-pointer relative"
+      className="p-4 md:p-6 card-hover cursor-pointer relative w-full"
       onClick={() => !isCustomizing && (window.location.href = path)}
+      onKeyPress={handleKeyPress}
+      tabIndex={0}
+      role="button"
+      aria-label={`Go to ${label}`}
     >
       {isCustomizing && onRemove && (
         <Button
@@ -34,6 +44,12 @@ export const StatCard = ({
             e.stopPropagation();
             onRemove();
           }}
+          onKeyPress={(e) => {
+            if (e.key === 'Enter') {
+              e.stopPropagation();
+              onRemove();
+            }
+          }}
         >
           <X className="h-4 w-4" />
         </Button>
@@ -42,9 +58,9 @@ export const StatCard = ({
         <div className="p-2 gradient-bg rounded-lg shrink-0">
           <Icon size={20} className="md:w-6 md:h-6" />
         </div>
-        <div>
-          <h3 className="font-semibold text-sm md:text-base">{label}</h3>
-          <p className="text-xs md:text-sm text-muted-foreground">
+        <div className="min-w-0 flex-1">
+          <h3 className="font-semibold text-sm md:text-base truncate">{label}</h3>
+          <p className="text-xs md:text-sm text-muted-foreground truncate">
             {value}
           </p>
         </div>
