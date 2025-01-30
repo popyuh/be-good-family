@@ -34,6 +34,7 @@ export const FamilySetup = () => {
         .from('family_members')
         .select('*')
         .eq('user_id', user.id)
+        .limit(1)
         .maybeSingle();
 
       if (memberError) {
