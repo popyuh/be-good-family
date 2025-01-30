@@ -5,13 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/lib/supabase";
-import { QRCodeSVG } from "qrcode.react";
 
 export const FamilySetup = () => {
   const [familyName, setFamilyName] = useState("");
-  const [inviteCode, setInviteCode] = useState("TEST123"); // Default test code
   const [isFirstUser, setIsFirstUser] = useState(true);
-  const [qrValue, setQrValue] = useState("");
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -21,25 +18,36 @@ export const FamilySetup = () => {
 
   const checkExistingFamily = async () => {
     try {
+      console.log("Checking existing family...");
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) {
+        console.log("No user found");
+        return;
+      }
 
-      const { data: memberData } = await supabase
+      const { data: memberData, error: memberError } = await supabase
         .from('family_members')
         .select('*')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
+
+      if (memberError) {
+        console.error('Error checking family membership:', memberError);
+        return;
+      }
 
       if (memberData) {
+        console.log("User already in family, redirecting...");
         navigate('/');
         return;
       }
 
-      const { data: families } = await supabase
+      const { count } = await supabase
         .from('family_groups')
-        .select('count');
+        .select('*', { count: 'exact', head: true });
 
-      setIsFirstUser(families?.length === 0);
+      setIsFirstUser(count === 0);
+      console.log("Is first user:", count === 0);
     } catch (error) {
       console.error('Error checking family:', error);
     }
@@ -47,27 +55,30 @@ export const FamilySetup = () => {
 
   const createFamily = async () => {
     try {
+      console.log("Creating family...");
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('No user found');
 
-      // Always use TEST123 for testing
-      const testInviteCode = "TEST123";
-      
-      const { data: family, error } = await supabase
+      const { data: family, error: familyError } = await supabase
         .from('family_groups')
         .insert([
           {
-            name: familyName || 'Test Family', // Default name if empty
+            name: familyName || 'Test Family',
             owner_id: user.id,
-            invite_code: testInviteCode
+            invite_code: 'TEST123'
           }
         ])
         .select()
         .single();
 
-      if (error) throw error;
+      if (familyError) {
+        console.error('Error creating family:', familyError);
+        throw familyError;
+      }
 
-      await supabase
+      console.log("Family created:", family);
+
+      const { error: memberError } = await supabase
         .from('family_members')
         .insert([
           {
@@ -77,13 +88,17 @@ export const FamilySetup = () => {
           }
         ]);
 
-      setInviteCode(testInviteCode);
-      setQrValue(`${window.location.origin}/join/${testInviteCode}`);
-      
+      if (memberError) {
+        console.error('Error adding member:', memberError);
+        throw memberError;
+      }
+
       toast({
         title: "Success!",
         description: "Family group created successfully!",
       });
+
+      navigate('/');
     } catch (error) {
       console.error('Error creating family:', error);
       toast({
@@ -96,51 +111,37 @@ export const FamilySetup = () => {
 
   const joinFamily = async () => {
     try {
+      console.log("Joining family...");
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('No user found');
 
-      // For testing, always succeed with any code
-      const { data: family } = await supabase
+      // For testing, get the first available family
+      const { data: family, error: familyError } = await supabase
         .from('family_groups')
         .select('*')
         .limit(1)
         .single();
 
-      if (!family) {
-        // Create a test family if none exists
-        const { data: newFamily, error: createError } = await supabase
-          .from('family_groups')
-          .insert([
-            {
-              name: 'Test Family',
-              owner_id: user.id,
-              invite_code: 'TEST123'
-            }
-          ])
-          .select()
-          .single();
+      if (familyError) {
+        console.error('Error finding family:', familyError);
+        throw familyError;
+      }
 
-        if (createError) throw createError;
-        
-        await supabase
-          .from('family_members')
-          .insert([
-            {
-              family_id: newFamily.id,
-              user_id: user.id,
-              role: 'member'
-            }
-          ]);
-      } else {
-        await supabase
-          .from('family_members')
-          .insert([
-            {
-              family_id: family.id,
-              user_id: user.id,
-              role: 'member'
-            }
-          ]);
+      console.log("Found family to join:", family);
+
+      const { error: memberError } = await supabase
+        .from('family_members')
+        .insert([
+          {
+            family_id: family.id,
+            user_id: user.id,
+            role: 'member'
+          }
+        ]);
+
+      if (memberError) {
+        console.error('Error joining family:', memberError);
+        throw memberError;
       }
 
       toast({
@@ -170,20 +171,20 @@ export const FamilySetup = () => {
           <div className="space-y-2">
             <label className="text-sm font-medium">Family Name</label>
             <Input
-              placeholder="Enter your family name (optional for testing)"
+              placeholder="Enter your family name"
               value={familyName}
               onChange={(e) => setFamilyName(e.target.value)}
             />
           </div>
 
           <Button onClick={createFamily} className="w-full">
-            Create Test Family Group
+            Create Family Group
           </Button>
         </div>
       ) : (
         <div className="space-y-6">
           <p className="text-sm text-muted-foreground">
-            Testing mode: Click join to automatically join a family group
+            Click join to automatically join a test family group
           </p>
           <Button onClick={joinFamily} className="w-full">
             Join Test Family
