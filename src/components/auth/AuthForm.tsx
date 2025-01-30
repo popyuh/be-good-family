@@ -1,18 +1,19 @@
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/lib/supabase";
 import { useNavigate } from "react-router-dom";
+import { AuthFormInputs } from "./AuthFormInputs";
+import { useAuth } from "@/hooks/use-auth";
 
 export function AuthForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
-  const { toast } = useToast();
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const { isLoading, setIsLoading, validateInputs, signUp, signIn } = useAuth();
 
   useEffect(() => {
     const checkSession = async () => {
@@ -32,84 +33,24 @@ export function AuthForm() {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
-  const validateInputs = () => {
-    console.log("Validating inputs - Email:", email, "Password length:", password.length);
-    
-    if (!email || !password) {
-      console.log("Validation failed: Missing email or password");
-      toast({
-        title: "Error",
-        description: "Please fill in all fields",
-        variant: "destructive",
-      });
-      return false;
-    }
-    
-    if (password.length < 6) {
-      console.log("Validation failed: Password too short");
-      toast({
-        title: "Error",
-        description: "Password must be at least 6 characters long",
-        variant: "destructive",
-      });
-      return false;
-    }
-    
-    console.log("Input validation passed");
-    return true;
-  };
-
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Starting auth process...");
     console.log(`Mode: ${isSignUp ? "Sign Up" : "Sign In"}`);
     
-    if (!validateInputs()) return;
+    if (!validateInputs(email, password)) return;
     
     setIsLoading(true);
     
     try {
       if (isSignUp) {
-        console.log("Attempting sign up with email:", email);
-        const { data, error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo: `${window.location.origin}/auth/callback`,
-          },
-        });
-
-        console.log("Sign up response:", { data, error });
-        
-        if (error) {
-          console.error("Sign up error:", error);
-          throw error;
-        }
-
-        if (!data.user) {
-          console.error("No user data returned from signup");
-          throw new Error("Failed to create account");
-        }
-
+        await signUp(email, password);
         toast({
           title: "Success",
           description: "Account created successfully! Please check your email to verify your account.",
         });
-        
       } else {
-        console.log("Attempting sign in with email:", email);
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-
-        console.log("Sign in response:", { data, error });
-        
-        if (error) {
-          console.error("Sign in error:", error);
-          throw error;
-        }
-
+        await signIn(email, password);
         toast({
           title: "Success",
           description: "Successfully signed in",
@@ -153,25 +94,12 @@ export function AuthForm() {
           {isSignUp ? "Create an account to get started." : "Sign in to your account."}
         </p>
         
-        <div className="space-y-2">
-          <Input
-            type="email"
-            placeholder="Enter your email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Input
-            type="password"
-            placeholder="Enter your password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </div>
+        <AuthFormInputs
+          email={email}
+          setEmail={setEmail}
+          password={password}
+          setPassword={setPassword}
+        />
 
         <Button 
           type="submit" 
