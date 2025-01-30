@@ -23,6 +23,7 @@ export const RecipeDirectory = () => {
   const { toast } = useToast();
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [importText, setImportText] = useState("");
+  const [recipeTitle, setRecipeTitle] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<RecipeCategory>("Main Dishes");
 
   const categories: RecipeCategory[] = [
@@ -44,7 +45,7 @@ export const RecipeDirectory = () => {
     const lines = text.split('\n').map(line => line.trim()).filter(Boolean);
     
     return {
-      name: lines[0] || "New Recipe",
+      name: recipeTitle || "New Recipe",
       ingredients: lines.filter(line => line.includes('•') || line.includes('-')),
       instructions: lines.filter(line => /^\d+\./.test(line)),
       category: selectedCategory,
@@ -66,6 +67,7 @@ export const RecipeDirectory = () => {
 
       setRecipes([...recipes, newRecipe]);
       setImportText("");
+      setRecipeTitle("");
       toast({
         title: "Success",
         description: "Recipe imported successfully",
@@ -96,6 +98,18 @@ export const RecipeDirectory = () => {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
+            <div className="flex flex-col space-y-2">
+              <label htmlFor="recipe-title" className="text-sm font-medium">
+                Recipe Title
+              </label>
+              <Input
+                id="recipe-title"
+                value={recipeTitle}
+                onChange={(e) => setRecipeTitle(e.target.value)}
+                placeholder="Enter recipe title"
+                className="max-w-md"
+              />
+            </div>
             <Textarea
               value={importText}
               onChange={(e) => setImportText(e.target.value)}
