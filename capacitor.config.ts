@@ -1,8 +1,8 @@
 import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.ourfamilyhub.app',
-  appName: 'Our Family Hub',
+  appId: 'com.begoodfamily.app',
+  appName: 'BeGoodFamily',
   webDir: 'dist',
   server: {
     androidScheme: 'http',

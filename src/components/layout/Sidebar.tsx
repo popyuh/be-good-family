@@ -28,7 +28,7 @@ export const Sidebar = () => {
   return (
     <aside className="flex h-full w-64 flex-col bg-card border-r">
       <div className="flex h-16 items-center border-b px-6">
-        <span className="text-lg font-semibold">Family Hub</span>
+        <span className="text-lg font-semibold">BeGoodFamily</span>
       </div>
       
       <nav className="flex-1 space-y-1 p-4 overflow-y-auto">
