@@ -107,8 +107,8 @@ export default function Profile() {
     <Layout>
       <div className="max-w-2xl mx-auto">
         <Card className="p-6">
-          <div className="flex justify-between items-start mb-6">
-            <div className="flex items-center gap-4">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+            <div className="flex items-center gap-4 w-full sm:w-auto">
               {isEditing ? (
                 <AvatarUpload
                   currentAvatarUrl={formData.avatar_url}
@@ -122,7 +122,7 @@ export default function Profile() {
                   {profile.emoji}
                 </div>
               )}
-              <div>
+              <div className="flex-1 sm:flex-initial">
                 {isEditing ? (
                   <Input
                     name="name"
@@ -138,7 +138,7 @@ export default function Profile() {
                 )}
               </div>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 w-full sm:w-auto justify-end">
               {isEditing ? (
                 <>
                   <Button
