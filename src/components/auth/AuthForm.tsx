@@ -19,7 +19,10 @@ export function AuthForm() {
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       console.log("Current session check:", session ? "Authenticated" : "Not authenticated");
-      if (session) navigate('/');
+      if (session) {
+        console.log("Session found, redirecting to home");
+        navigate('/');
+      }
     };
     
     checkSession();
@@ -27,7 +30,10 @@ export function AuthForm() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log("Auth state changed - Event:", event);
       console.log("Auth state changed - Session:", session ? "Present" : "None");
-      if (session) navigate('/');
+      if (session) {
+        console.log("New session detected, redirecting to home");
+        navigate('/');
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -37,13 +43,19 @@ export function AuthForm() {
     e.preventDefault();
     console.log("Starting auth process...");
     console.log(`Mode: ${isSignUp ? "Sign Up" : "Sign In"}`);
+    console.log("Email:", email);
+    console.log("Password length:", password.length);
     
-    if (!validateInputs(email, password)) return;
+    if (!validateInputs(email, password)) {
+      console.log("Input validation failed");
+      return;
+    }
     
     setIsLoading(true);
     
     try {
       if (isSignUp) {
+        console.log("Attempting sign up...");
         const { data, error } = await signUp(email, password);
         console.log("Sign up response:", { data, error });
         
@@ -54,6 +66,7 @@ export function AuthForm() {
           description: "Account created successfully! Please check your email to verify your account.",
         });
       } else {
+        console.log("Attempting sign in...");
         const { data, error } = await signIn(email, password);
         console.log("Sign in response:", { data, error });
         
