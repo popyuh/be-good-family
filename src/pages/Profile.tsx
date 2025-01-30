@@ -106,8 +106,8 @@ export default function Profile() {
   return (
     <Layout>
       <div className="max-w-2xl mx-auto">
-        <Card className="p-6">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+        <Card className="p-6 relative">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-6">
             <div className="flex items-center gap-4 w-full sm:w-auto">
               {isEditing ? (
                 <AvatarUpload
@@ -128,43 +128,15 @@ export default function Profile() {
                     name="name"
                     value={formData.name}
                     onChange={handleInputChange}
-                    className="font-bold text-xl"
+                    className="font-bold text-xl mb-1"
                   />
                 ) : (
                   <>
                     <h1 className="text-2xl font-bold">{profile.name}</h1>
-                    <p className="text-muted-foreground">{profile.email}</p>
+                    <p className="text-muted-foreground text-sm">{profile.email}</p>
                   </>
                 )}
               </div>
-            </div>
-            <div className="flex gap-2 w-full sm:w-auto justify-end">
-              {isEditing ? (
-                <>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => setIsEditing(false)}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    size="icon"
-                    onClick={handleSave}
-                    disabled={isSaving}
-                  >
-                    <Save className="h-4 w-4" />
-                  </Button>
-                </>
-              ) : (
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => setIsEditing(true)}
-                >
-                  <Pencil className="h-4 w-4" />
-                </Button>
-              )}
             </div>
           </div>
 
@@ -245,6 +217,35 @@ export default function Profile() {
                   </div>
                 )}
               </>
+            )}
+          </div>
+
+          <div className={`absolute ${isEditing ? 'top-4 right-4' : 'bottom-4 right-4'} flex gap-2`}>
+            {isEditing ? (
+              <>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setIsEditing(false)}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+                <Button
+                  size="icon"
+                  onClick={handleSave}
+                  disabled={isSaving}
+                >
+                  <Save className="h-4 w-4" />
+                </Button>
+              </>
+            ) : (
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setIsEditing(true)}
+              >
+                <Pencil className="h-4 w-4" />
+              </Button>
             )}
           </div>
         </Card>
