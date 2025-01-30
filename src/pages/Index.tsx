@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ProfileSetup } from "@/components/profile/ProfileSetup";
+import { FamilySetup } from "@/components/family/FamilySetup";
 import { supabase } from "@/lib/supabase";
 import { UserProfile } from "@/types/user";
 
@@ -68,14 +69,16 @@ const Index = () => {
   const [selectedStats, setSelectedStats] = useState<StatItem[]>(availableStats.slice(0, 4));
   const [isCustomizing, setIsCustomizing] = useState(false);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [isFamilyMember, setIsFamilyMember] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchProfile = async () => {
+    const fetchProfileAndFamily = async () => {
       try {
         const { data: { user } } = await supabase.auth.getUser();
         
         if (user) {
+          // Fetch user profile
           const { data: profile } = await supabase
             .from('profiles')
             .select('*')
@@ -83,6 +86,15 @@ const Index = () => {
             .single();
           
           setUserProfile(profile);
+
+          // Check if user is part of a family
+          const { data: familyMember } = await supabase
+            .from('family_members')
+            .select('*')
+            .eq('user_id', user.id)
+            .single();
+
+          setIsFamilyMember(!!familyMember);
         }
       } catch (error) {
         console.error('Error fetching profile:', error);
@@ -91,7 +103,7 @@ const Index = () => {
       }
     };
 
-    fetchProfile();
+    fetchProfileAndFamily();
   }, []);
 
   const handleAddStat = (stat: StatItem) => {
@@ -112,12 +124,23 @@ const Index = () => {
     );
   }
 
-  // Show profile setup if user is logged in but hasn't set up their profile
+  // Show profile setup if user hasn't set up their profile
   if (!userProfile) {
     return (
       <Layout>
         <div className="max-w-5xl mx-auto pt-8">
           <ProfileSetup />
+        </div>
+      </Layout>
+    );
+  }
+
+  // Show family setup if user has profile but isn't part of a family
+  if (!isFamilyMember) {
+    return (
+      <Layout>
+        <div className="max-w-5xl mx-auto pt-8">
+          <FamilySetup />
         </div>
       </Layout>
     );
