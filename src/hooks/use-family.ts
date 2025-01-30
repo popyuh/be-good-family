@@ -6,6 +6,13 @@ export function useFamily() {
     queryKey: ["family"],
     queryFn: async () => {
       console.log("Fetching family status...");
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        console.log("No active session found, skipping family fetch");
+        return { isFamilyMember: false };
+      }
+
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       
       if (userError) {
@@ -32,6 +39,7 @@ export function useFamily() {
         isFamilyMember: familyMembers && familyMembers.length > 0,
         memberships: familyMembers 
       };
-    }
+    },
+    retry: false, // Don't retry if there's no session
   });
 }
