@@ -14,10 +14,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { ColorOption, EmojiOption } from "@/types/user";
 import { supabase } from "@/lib/supabase";
 import { useQueryClient } from "@tanstack/react-query";
-
-interface ProfileSetupProps {
-  onComplete?: () => void;
-}
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 const colorOptions = [
   { name: "Purple", value: "#9b87f5" },
@@ -44,7 +41,7 @@ const emojiOptions: EmojiOption[] = [
   { emoji: "🦭", id: "seal" },
 ];
 
-export const ProfileSetup = ({ onComplete }: ProfileSetupProps) => {
+export const ProfileSetup = ({ onComplete }: { onComplete?: () => void }) => {
   const [selectedColor, setSelectedColor] = useState<string>(colorOptions[0].value);
   const [selectedEmoji, setSelectedEmoji] = useState<string>(emojiOptions[0].emoji);
   const [name, setName] = useState<string>("");
@@ -53,7 +50,6 @@ export const ProfileSetup = ({ onComplete }: ProfileSetupProps) => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
-  // Check auth state on mount
   useEffect(() => {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -147,6 +143,19 @@ export const ProfileSetup = ({ onComplete }: ProfileSetupProps) => {
       <h2 className="text-xl md:text-2xl font-bold mb-6">Complete Your Profile</h2>
       
       <div className="space-y-6">
+        <div className="flex justify-center mb-6">
+          <Avatar className="h-24 w-24">
+            <AvatarFallback>
+              <div 
+                className="w-full h-full flex items-center justify-center text-2xl"
+                style={{ backgroundColor: selectedColor }}
+              >
+                {selectedEmoji}
+              </div>
+            </AvatarFallback>
+          </Avatar>
+        </div>
+
         <div className="space-y-2">
           <label className="text-sm font-medium">Your name</label>
           <Input
