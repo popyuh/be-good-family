@@ -19,6 +19,17 @@ export const useAuth = () => {
       return false;
     }
     
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      console.log("Validation failed: Invalid email format");
+      toast({
+        title: "Error",
+        description: "Please enter a valid email address",
+        variant: "destructive",
+      });
+      return false;
+    }
+    
     if (password.length < 6) {
       console.log("Validation failed: Password too short");
       toast({
@@ -40,6 +51,9 @@ export const useAuth = () => {
       password,
       options: {
         emailRedirectTo: `${window.location.origin}/auth/callback`,
+        data: {
+          email: email,
+        },
       },
     });
 
