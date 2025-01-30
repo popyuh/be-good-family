@@ -12,8 +12,8 @@ import { useFamily } from "@/hooks/use-family";
 
 const Index = () => {
   const [isCustomizing, setIsCustomizing] = useState(false);
-  const { profile, isLoading: profileLoading } = useProfile();
-  const { isFamilyMember, isLoading: familyLoading } = useFamily();
+  const { data: profile, isLoading: profileLoading } = useProfile();
+  const { data: familyData, isLoading: familyLoading } = useFamily();
 
   if (profileLoading || familyLoading) {
     return (
@@ -35,7 +35,7 @@ const Index = () => {
     );
   }
 
-  if (!isFamilyMember) {
+  if (!familyData?.isFamilyMember) {
     return (
       <Layout>
         <div className="max-w-5xl mx-auto pt-8">
