@@ -94,14 +94,13 @@ export const BudgetCategories = ({ initialCategories, onCategoriesChange }: Budg
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <h2 className="text-xl font-semibold">Budget Categories</h2>
-        <div className="flex items-center gap-2">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+        <div className="flex items-center gap-2 w-full sm:w-auto">
           <Input
             placeholder="Category name"
             value={newCategory.name}
             onChange={(e) => setNewCategory({ ...newCategory, name: e.target.value })}
-            className="w-40"
+            className="flex-1 sm:w-40"
           />
           <Input
             placeholder="Budget amount"
@@ -109,9 +108,9 @@ export const BudgetCategories = ({ initialCategories, onCategoriesChange }: Budg
             value={newCategory.budget}
             onChange={(e) => setNewCategory({ ...newCategory, budget: e.target.value })}
             onKeyPress={(e) => handleAddCategory(e as KeyboardEvent)}
-            className="w-32"
+            className="flex-1 sm:w-32"
           />
-          <Button size="icon" onClick={() => handleAddCategory()} className="h-8 w-8">
+          <Button size="icon" onClick={() => handleAddCategory()} className="h-8 w-8 shrink-0">
             <Plus className="h-4 w-4" />
           </Button>
         </div>
@@ -124,15 +123,15 @@ export const BudgetCategories = ({ initialCategories, onCategoriesChange }: Budg
 
           return (
             <Card key={index} className="p-4">
-              <div className="flex justify-between items-center mb-2">
-                <div className="flex-1">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-2">
+                <div className="flex-1 w-full">
                   {isEditing ? (
-                    <div className="flex gap-2">
+                    <div className="flex flex-col sm:flex-row gap-2 w-full">
                       <Input
                         value={category.name}
                         onChange={(e) => handleEditCategory(index, 'name', e.target.value)}
                         onKeyPress={(e) => e.key === 'Enter' && setEditingId(null)}
-                        className="w-40"
+                        className="flex-1"
                         autoFocus
                       />
                       <Input
@@ -140,11 +139,11 @@ export const BudgetCategories = ({ initialCategories, onCategoriesChange }: Budg
                         value={category.budget}
                         onChange={(e) => handleEditCategory(index, 'budget', e.target.value)}
                         onKeyPress={(e) => e.key === 'Enter' && setEditingId(null)}
-                        className="w-32"
+                        className="flex-1"
                       />
                     </div>
                   ) : (
-                    <div className="flex justify-between items-center">
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 w-full">
                       <h3 className="font-medium">{category.name}</h3>
                       <p className="text-sm text-muted-foreground">
                         ${category.spent.toLocaleString()} / ${category.budget.toLocaleString()}
@@ -152,7 +151,7 @@ export const BudgetCategories = ({ initialCategories, onCategoriesChange }: Budg
                     </div>
                   )}
                 </div>
-                <div className="flex gap-1 ml-4">
+                <div className="flex gap-1 sm:ml-4">
                   <Button
                     size="icon"
                     variant="ghost"
