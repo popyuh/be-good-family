@@ -9,11 +9,13 @@ interface JoinFamilyFormProps {
 
 export const JoinFamilyForm = ({ onSuccess }: JoinFamilyFormProps) => {
   const [isLoading, setIsLoading] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
   const { toast } = useToast();
 
   const joinFamily = async () => {
     setIsLoading(true);
     try {
+      console.log("Joining family...");
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('No user found');
 
@@ -27,6 +29,7 @@ export const JoinFamilyForm = ({ onSuccess }: JoinFamilyFormProps) => {
         throw familyError || new Error('No family found to join');
       }
 
+      console.log("Found family, adding member...");
       const { error: memberError } = await supabase
         .from('family_members')
         .insert([
@@ -39,6 +42,7 @@ export const JoinFamilyForm = ({ onSuccess }: JoinFamilyFormProps) => {
 
       if (memberError) throw memberError;
 
+      console.log("Successfully joined family");
       toast({
         title: "Success!",
         description: "Joined family group successfully!",
@@ -47,11 +51,17 @@ export const JoinFamilyForm = ({ onSuccess }: JoinFamilyFormProps) => {
       onSuccess();
     } catch (error) {
       console.error('Error joining family:', error);
-      toast({
-        title: "Error",
-        description: "Failed to join family group. Please try again.",
-        variant: "destructive",
-      });
+      if (retryCount < 3) {
+        console.log(`Retrying join (attempt ${retryCount + 1})...`);
+        setRetryCount(prev => prev + 1);
+        setTimeout(() => joinFamily(), 1000);
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to join family group. Please try again.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setIsLoading(false);
     }

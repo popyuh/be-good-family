@@ -8,18 +8,20 @@ import { JoinFamilyForm } from "./JoinFamilyForm";
 
 export const FamilySetup = () => {
   const [isFirstUser, setIsFirstUser] = useState(true);
+  const [retryCount, setRetryCount] = useState(0);
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    checkExistingFamily();
-  }, []);
-
   const checkExistingFamily = async () => {
     try {
+      console.log("Checking existing family...");
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) {
+        console.log("No user found");
+        return;
+      }
 
+      // First check if user is already a member of a family
       const { data: memberData, error: memberError } = await supabase
         .from('family_members')
         .select('*')
@@ -28,6 +30,11 @@ export const FamilySetup = () => {
 
       if (memberError) {
         console.error('Error checking family membership:', memberError);
+        if (retryCount < 3) {
+          console.log(`Retrying check (attempt ${retryCount + 1})...`);
+          setRetryCount(prev => prev + 1);
+          return;
+        }
         toast({
           title: "Error",
           description: "Failed to check family membership. Please try again.",
@@ -37,10 +44,12 @@ export const FamilySetup = () => {
       }
 
       if (memberData) {
+        console.log("User is already a family member, redirecting...");
         navigate('/');
         return;
       }
 
+      // Then check if there are any existing families
       const { count, error: countError } = await supabase
         .from('family_groups')
         .select('*', { count: 'exact', head: true });
@@ -50,18 +59,30 @@ export const FamilySetup = () => {
         return;
       }
 
+      console.log(`Found ${count} existing families`);
       setIsFirstUser(count === 0);
     } catch (error) {
-      console.error('Error checking family:', error);
-      toast({
-        title: "Error",
-        description: "Failed to check family status. Please try again.",
-        variant: "destructive",
-      });
+      console.error('Error in checkExistingFamily:', error);
+      if (retryCount < 3) {
+        setTimeout(() => {
+          setRetryCount(prev => prev + 1);
+        }, 1000); // Wait 1 second before retrying
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to check family status. Please refresh the page.",
+          variant: "destructive",
+        });
+      }
     }
   };
 
+  useEffect(() => {
+    checkExistingFamily();
+  }, [retryCount]);
+
   const handleSuccess = () => {
+    console.log("Family setup successful, navigating to home...");
     navigate('/');
   };
 

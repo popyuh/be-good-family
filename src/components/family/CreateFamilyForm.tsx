@@ -11,6 +11,7 @@ interface CreateFamilyFormProps {
 export const CreateFamilyForm = ({ onSuccess }: CreateFamilyFormProps) => {
   const [familyName, setFamilyName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
   const { toast } = useToast();
 
   const createFamily = async () => {
@@ -25,6 +26,7 @@ export const CreateFamilyForm = ({ onSuccess }: CreateFamilyFormProps) => {
 
     setIsLoading(true);
     try {
+      console.log("Creating family...");
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('No user found');
 
@@ -40,10 +42,11 @@ export const CreateFamilyForm = ({ onSuccess }: CreateFamilyFormProps) => {
           }
         ])
         .select()
-        .single();
+        .maybeSingle();
 
       if (familyError) throw familyError;
 
+      console.log("Family created, adding member...");
       const { error: memberError } = await supabase
         .from('family_members')
         .insert([
@@ -56,6 +59,7 @@ export const CreateFamilyForm = ({ onSuccess }: CreateFamilyFormProps) => {
 
       if (memberError) throw memberError;
 
+      console.log("Successfully created family and added member");
       toast({
         title: "Success!",
         description: "Family group created successfully!",
@@ -64,11 +68,17 @@ export const CreateFamilyForm = ({ onSuccess }: CreateFamilyFormProps) => {
       onSuccess();
     } catch (error) {
       console.error('Error creating family:', error);
-      toast({
-        title: "Error",
-        description: "Failed to create family group. Please try again.",
-        variant: "destructive",
-      });
+      if (retryCount < 3) {
+        console.log(`Retrying creation (attempt ${retryCount + 1})...`);
+        setRetryCount(prev => prev + 1);
+        setTimeout(() => createFamily(), 1000);
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to create family group. Please try again.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setIsLoading(false);
     }
