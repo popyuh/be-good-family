@@ -84,6 +84,7 @@ export function CreateEventDialog({
       description,
       start_date: startDate,
       end_date: endDate,
+      user_id: "", // This will be set by the eventService based on the current user's profile
     });
   };
 
