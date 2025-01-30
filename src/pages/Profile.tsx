@@ -107,6 +107,35 @@ export default function Profile() {
     <Layout>
       <div className="max-w-2xl mx-auto">
         <Card className="p-6 relative">
+          <div className="absolute top-4 right-4 flex gap-2">
+            {isEditing ? (
+              <>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setIsEditing(false)}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+                <Button
+                  size="icon"
+                  onClick={handleSave}
+                  disabled={isSaving}
+                >
+                  <Save className="h-4 w-4" />
+                </Button>
+              </>
+            ) : (
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setIsEditing(true)}
+              >
+                <Pencil className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-6">
             <div className="flex items-center gap-4 w-full sm:w-auto">
               {isEditing ? (
@@ -131,14 +160,15 @@ export default function Profile() {
                     className="font-bold text-xl mb-1"
                   />
                 ) : (
-                  <>
-                    <h1 className="text-2xl font-bold">{profile.name}</h1>
-                    <p className="text-muted-foreground text-sm">{profile.email}</p>
-                  </>
+                  <h1 className="text-2xl font-bold mb-2">{profile.name}</h1>
                 )}
               </div>
             </div>
           </div>
+
+          {!isEditing && (
+            <p className="text-muted-foreground text-sm mb-6">{profile.email}</p>
+          )}
 
           <div className="space-y-4">
             {isEditing ? (
@@ -217,35 +247,6 @@ export default function Profile() {
                   </div>
                 )}
               </>
-            )}
-          </div>
-
-          <div className={`absolute ${isEditing ? 'top-4 right-4' : 'bottom-4 right-4'} flex gap-2`}>
-            {isEditing ? (
-              <>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => setIsEditing(false)}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-                <Button
-                  size="icon"
-                  onClick={handleSave}
-                  disabled={isSaving}
-                >
-                  <Save className="h-4 w-4" />
-                </Button>
-              </>
-            ) : (
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => setIsEditing(true)}
-              >
-                <Pencil className="h-4 w-4" />
-              </Button>
             )}
           </div>
         </Card>
