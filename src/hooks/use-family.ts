@@ -5,19 +5,33 @@ export function useFamily() {
   return useQuery({
     queryKey: ["family"],
     queryFn: async () => {
+      console.log("Fetching family status...");
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       
-      if (userError) throw userError;
-      if (!user) return { isFamilyMember: false };
+      if (userError) {
+        console.error("Error getting user:", userError);
+        throw userError;
+      }
+      if (!user) {
+        console.log("No user found");
+        return { isFamilyMember: false };
+      }
 
-      const { data: familyMember, error: familyError } = await supabase
+      const { data: familyMembers, error: familyError } = await supabase
         .from('family_members')
         .select('*')
-        .eq('user_id', user.id)
-        .single();
+        .eq('user_id', user.id);
 
-      if (familyError) return { isFamilyMember: false };
-      return { isFamilyMember: !!familyMember };
+      if (familyError) {
+        console.error("Error checking family membership:", familyError);
+        return { isFamilyMember: false };
+      }
+
+      console.log(`Found ${familyMembers?.length || 0} family memberships`);
+      return { 
+        isFamilyMember: familyMembers && familyMembers.length > 0,
+        memberships: familyMembers 
+      };
     }
   });
 }

@@ -29,13 +29,11 @@ export const FamilySetup = () => {
         return;
       }
 
-      // First check if user is already a member of a family
+      // First check if user is already a member of any family
       const { data: memberData, error: memberError } = await supabase
         .from('family_members')
         .select('*')
-        .eq('user_id', user.id)
-        .limit(1)
-        .maybeSingle();
+        .eq('user_id', user.id);
 
       if (memberError) {
         console.error('Error checking family membership:', memberError);
@@ -52,7 +50,7 @@ export const FamilySetup = () => {
         return;
       }
 
-      if (memberData) {
+      if (memberData && memberData.length > 0) {
         console.log("User is already a family member, redirecting...");
         navigate('/');
         return;
@@ -75,7 +73,7 @@ export const FamilySetup = () => {
       if (retryCount < 3) {
         setTimeout(() => {
           setRetryCount(prev => prev + 1);
-        }, 1000); // Wait 1 second before retrying
+        }, 1000);
       } else {
         toast({
           title: "Error",
