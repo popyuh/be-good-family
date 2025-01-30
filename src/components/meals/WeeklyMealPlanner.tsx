@@ -2,9 +2,14 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Meal, MealType } from "@/types/meals";
-import { Edit2, Save, Trash2, X } from "lucide-react";
+import { Edit2, Save, Trash2, X, ChevronDown } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 
 export const WeeklyMealPlanner = () => {
   const { toast } = useToast();
@@ -53,104 +58,115 @@ export const WeeklyMealPlanner = () => {
     });
   };
 
-  const getMeal = (dayOfWeek: number, type: MealType) => {
-    return meals.find((meal) => meal.dayOfWeek === dayOfWeek && meal.type === type);
+  const getMealsForDay = (dayIndex: number) => {
+    return meals.filter((meal) => meal.dayOfWeek === dayIndex);
+  };
+
+  const renderMealList = (dayMeals: Meal[]) => {
+    return mealTypes.map((type) => {
+      const meal = dayMeals.find((m) => m.type === type);
+      return (
+        <div key={type} className="py-2">
+          {meal ? (
+            <div className="flex items-center justify-between gap-2 px-2">
+              <div className="flex-1">
+                <span className="text-sm font-medium capitalize">{type}:</span>
+                {editingMeal === meal.id ? (
+                  <div className="flex items-center gap-2 mt-1">
+                    <Input
+                      value={editedName}
+                      onChange={(e) => setEditedName(e.target.value)}
+                      placeholder="Enter meal"
+                      className="h-8"
+                    />
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      onClick={() => updateMeal(meal.id)}
+                      className="h-8 w-8"
+                    >
+                      <Save className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      onClick={() => setEditingMeal(null)}
+                      className="h-8 w-8"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between gap-2 mt-1">
+                    <span className="text-sm break-words">{meal.name}</span>
+                    <div className="flex gap-1">
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => {
+                          setEditingMeal(meal.id);
+                          setEditedName(meal.name);
+                        }}
+                        className="h-8 w-8"
+                      >
+                        <Edit2 className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => deleteMeal(meal.id)}
+                        className="h-8 w-8"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className="px-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full justify-start text-muted-foreground"
+                onClick={() => addMeal(dayMeals[0]?.dayOfWeek || 0, type)}
+              >
+                <span className="capitalize">Add {type}</span>
+              </Button>
+            </div>
+          )}
+        </div>
+      );
+    });
   };
 
   return (
-    <div className="w-full">
-      <div className="max-w-full overflow-x-auto">
-        <table className="w-full border-collapse min-w-[600px]">
-          <thead>
-            <tr>
-              <th className="p-2 md:p-4 border bg-muted text-left min-w-[80px]"></th>
-              {daysOfWeek.map((day, index) => (
-                <th key={day} className="p-2 md:p-4 border bg-muted font-medium text-left">
-                  <span className="hidden md:inline">{fullDayNames[index]}</span>
+    <div className="w-full space-y-4">
+      {daysOfWeek.map((day, index) => {
+        const dayMeals = getMealsForDay(index);
+        return (
+          <Collapsible key={day} className="border rounded-lg">
+            <CollapsibleTrigger className="flex items-center justify-between w-full p-4 hover:bg-muted/50 transition-colors">
+              <div className="flex items-center gap-2">
+                <span className="font-medium">
                   <span className="md:hidden">{day}</span>
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {mealTypes.map((type) => (
-              <tr key={type}>
-                <td className="p-2 md:p-4 border bg-muted font-medium capitalize text-left">
-                  {type}
-                </td>
-                {daysOfWeek.map((_, index) => {
-                  const meal = getMeal(index, type);
-                  return (
-                    <td key={index} className="p-2 md:p-4 border min-w-[120px]">
-                      {meal ? (
-                        <div className="flex flex-col md:flex-row items-start md:items-center gap-2">
-                          {editingMeal === meal.id ? (
-                            <div className="flex flex-col md:flex-row items-start md:items-center gap-2 w-full">
-                              <Input
-                                value={editedName}
-                                onChange={(e) => setEditedName(e.target.value)}
-                                placeholder="Enter meal"
-                                className="min-w-[100px] max-w-[150px]"
-                              />
-                              <div className="flex gap-1">
-                                <Button
-                                  size="icon"
-                                  variant="ghost"
-                                  onClick={() => updateMeal(meal.id)}
-                                >
-                                  <Save className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  size="icon"
-                                  variant="ghost"
-                                  onClick={() => setEditingMeal(null)}
-                                >
-                                  <X className="h-4 w-4" />
-                                </Button>
-                              </div>
-                            </div>
-                          ) : (
-                            <>
-                              <span className="flex-1 break-words">{meal.name}</span>
-                              <div className="flex gap-1">
-                                <Button
-                                  size="icon"
-                                  variant="ghost"
-                                  onClick={() => {
-                                    setEditingMeal(meal.id);
-                                    setEditedName(meal.name);
-                                  }}
-                                >
-                                  <Edit2 className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  size="icon"
-                                  variant="ghost"
-                                  onClick={() => deleteMeal(meal.id)}
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </div>
-                            </>
-                          )}
-                        </div>
-                      ) : (
-                        <Button
-                          variant="ghost"
-                          className="w-full text-xs md:text-sm"
-                          onClick={() => addMeal(index, type)}
-                        >
-                          Add {type}
-                        </Button>
-                      )}
-                    </td>
-                  );
-                })}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+                  <span className="hidden md:inline">{fullDayNames[index]}</span>
+                </span>
+                {dayMeals.length > 0 && (
+                  <span className="text-sm text-muted-foreground">
+                    ({dayMeals.length} meals)
+                  </span>
+                )}
+              </div>
+              <ChevronDown className="h-4 w-4" />
+            </CollapsibleTrigger>
+            <CollapsibleContent className="px-4 pb-4">
+              {renderMealList(dayMeals)}
+            </CollapsibleContent>
+          </Collapsible>
+        );
+      })}
     </div>
   );
 };
