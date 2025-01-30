@@ -1,16 +1,39 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/lib/supabase";
+import { useNavigate } from "react-router-dom";
 
 export function AuthForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
+  const [session, setSession] = useState<any>(null);
   const { toast } = useToast();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Check current session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log("Current session:", session);
+      setSession(session);
+      if (session) navigate('/');
+    });
+
+    // Listen for auth changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      console.log("Auth state changed:", _event, session);
+      setSession(session);
+      if (session) navigate('/');
+    });
+
+    return () => subscription.unsubscribe();
+  }, [navigate]);
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,44 +41,65 @@ export function AuthForm() {
     console.log(`Starting ${isSignUp ? 'sign up' : 'sign in'} process...`);
 
     try {
-      const { data, error } = isSignUp 
-        ? await supabase.auth.signUp({
-            email,
-            password,
-            options: {
-              emailRedirectTo: window.location.origin,
-            },
-          })
-        : await supabase.auth.signInWithPassword({
-            email,
-            password,
-          });
-
-      if (error) {
-        console.error("Auth error:", error);
-        throw error;
-      }
-
-      console.log("Auth successful:", data);
-      
       if (isSignUp) {
-        toast({
-          title: "Account created",
-          description: "You can now sign in with your credentials.",
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/auth/callback`,
+          },
         });
-        setIsSignUp(false);
+
+        if (error) throw error;
+
+        console.log("Sign up response:", data);
+        
+        toast({
+          title: "Check your email",
+          description: "We've sent you a confirmation link to complete your registration.",
+        });
+        
+        // Don't automatically switch to sign in - user needs to confirm email first
+        setEmail("");
+        setPassword("");
+        
       } else {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+
+        if (error) throw error;
+
+        console.log("Sign in successful:", data);
         toast({
           title: "Welcome back!",
           description: "You have successfully signed in.",
         });
+        
+        navigate('/');
       }
       
     } catch (error) {
       console.error("Auth error:", error);
+      
+      // More user-friendly error messages
+      let errorMessage = "An error occurred during authentication.";
+      if (error instanceof Error) {
+        if (error.message.includes("Email not confirmed")) {
+          errorMessage = "Please check your email and confirm your account before signing in.";
+        } else if (error.message.includes("Invalid login credentials")) {
+          errorMessage = "Invalid email or password. Please try again.";
+        } else if (error.message.includes("User already registered")) {
+          errorMessage = "This email is already registered. Please sign in instead.";
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "An error occurred during authentication.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -110,7 +154,11 @@ export function AuthForm() {
           type="button"
           variant="ghost"
           className="w-full"
-          onClick={() => setIsSignUp(!isSignUp)}
+          onClick={() => {
+            setIsSignUp(!isSignUp);
+            setEmail("");
+            setPassword("");
+          }}
         >
           {isSignUp 
             ? "Already have an account? Sign in" 
