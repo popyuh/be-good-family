@@ -9,9 +9,16 @@ import { Upload } from "lucide-react";
 interface AvatarUploadProps {
   currentAvatarUrl?: string | null;
   onUploadComplete: (url: string) => void;
+  userEmoji?: string;
+  userColor?: string;
 }
 
-export const AvatarUpload = ({ currentAvatarUrl, onUploadComplete }: AvatarUploadProps) => {
+export const AvatarUpload = ({ 
+  currentAvatarUrl, 
+  onUploadComplete, 
+  userEmoji,
+  userColor 
+}: AvatarUploadProps) => {
   const [uploading, setUploading] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const { toast } = useToast();
@@ -27,7 +34,7 @@ export const AvatarUpload = ({ currentAvatarUrl, onUploadComplete }: AvatarUploa
       const { data, error } = await supabase
         .storage
         .from('ProfilePic')
-        .createSignedUrl(path, 3600); // 1 hour expiry
+        .createSignedUrl(path, 3600);
 
       if (error) {
         console.error('Error getting signed URL:', error);
@@ -67,16 +74,16 @@ export const AvatarUpload = ({ currentAvatarUrl, onUploadComplete }: AvatarUploa
       const file = event.target.files[0];
       validateFile(file);
 
-      const userId = (await supabase.auth.getUser()).data.user?.id;
+      const { data: { user } } = await supabase.auth.getUser();
       
-      if (!userId) {
+      if (!user) {
         throw new Error('User not authenticated');
       }
 
       const fileExt = file.name.split('.').pop();
-      const fileName = `${userId}/${Date.now()}.${fileExt}`;
+      const fileName = `${user.id}/avatar.${fileExt}`;
 
-      const { error: uploadError, data } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from('ProfilePic')
         .upload(fileName, file, { upsert: true });
 
@@ -87,7 +94,7 @@ export const AvatarUpload = ({ currentAvatarUrl, onUploadComplete }: AvatarUploa
       // Get a signed URL for the uploaded file
       const { data: urlData, error: urlError } = await supabase.storage
         .from('ProfilePic')
-        .createSignedUrl(fileName, 3600); // 1 hour expiry
+        .createSignedUrl(fileName, 3600);
 
       if (urlError) {
         throw urlError;
@@ -95,7 +102,7 @@ export const AvatarUpload = ({ currentAvatarUrl, onUploadComplete }: AvatarUploa
 
       if (urlData?.signedUrl) {
         setAvatarUrl(urlData.signedUrl);
-        onUploadComplete(fileName); // Pass the file path instead of the signed URL
+        onUploadComplete(fileName);
       }
       
       toast({
@@ -119,8 +126,12 @@ export const AvatarUpload = ({ currentAvatarUrl, onUploadComplete }: AvatarUploa
     <div className="flex flex-col items-center gap-4">
       <Avatar className="h-24 w-24">
         <AvatarImage src={avatarUrl || undefined} />
-        <AvatarFallback>
-          <Upload className="h-8 w-8 text-muted-foreground" />
+        <AvatarFallback style={{ backgroundColor: userColor }}>
+          {!avatarUrl && userEmoji ? (
+            <span className="text-2xl">{userEmoji}</span>
+          ) : (
+            <Upload className="h-8 w-8 text-muted-foreground" />
+          )}
         </AvatarFallback>
       </Avatar>
       

@@ -142,14 +142,25 @@ export default function Profile() {
                 <AvatarUpload
                   currentAvatarUrl={formData.avatar_url}
                   onUploadComplete={handleAvatarUpload}
+                  userEmoji={profile.emoji}
+                  userColor={profile.color}
                 />
               ) : (
-                <div 
-                  className="w-16 h-16 rounded-full flex items-center justify-center text-3xl"
-                  style={{ backgroundColor: profile.color }}
-                >
-                  {profile.emoji}
-                </div>
+                profile.avatar_url ? (
+                  <Avatar className="h-16 w-16">
+                    <AvatarImage src={profile.avatar_url} />
+                    <AvatarFallback>
+                      <Upload className="h-8 w-8 text-muted-foreground" />
+                    </AvatarFallback>
+                  </Avatar>
+                ) : (
+                  <div 
+                    className="w-16 h-16 rounded-full flex items-center justify-center text-3xl"
+                    style={{ backgroundColor: profile.color }}
+                  >
+                    {profile.emoji}
+                  </div>
+                )
               )}
               <div className="flex-1 sm:flex-initial">
                 {isEditing ? (
