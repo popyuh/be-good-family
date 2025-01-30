@@ -21,22 +21,22 @@ const colorOptions: ColorOption[] = [
 ];
 
 const emojiOptions: EmojiOption[] = [
-  { emoji: "👩‍🎨" }, // Artist
-  { emoji: "🧑‍🎨" }, // Artist (gender-neutral)
-  { emoji: "👨‍🎨" }, // Artist (male)
-  { emoji: "🎭" },   // Theater/Arts
-  { emoji: "🦹‍♀️" }, // Superhero
-  { emoji: "🧙‍♀️" }, // Wizard
-  { emoji: "🧝‍♀️" }, // Elf
-  { emoji: "🧚‍♀️" }, // Fairy
-  { emoji: "👻" },   // Ghost
+  { emoji: "🦊" },   // Fox Face
+  { emoji: "🦁" },   // Lion Face
+  { emoji: "🐯" },   // Tiger Face
+  { emoji: "🐼" },   // Panda Face
+  { emoji: "🦝" },   // Raccoon
   { emoji: "🦊" },   // Fox
-  { emoji: "🦁" },   // Lion
-  { emoji: "🐯" },   // Tiger
-  { emoji: "🦄" },   // Unicorn
-  { emoji: "🐉" },   // Dragon
-  { emoji: "🌟" },   // Star
-  { emoji: "🎨" },   // Art Palette
+  { emoji: "🦨" },   // Skunk
+  { emoji: "🦦" },   // Otter
+  { emoji: "🦥" },   // Sloth
+  { emoji: "🦘" },   // Kangaroo
+  { emoji: "🦙" },   // Llama
+  { emoji: "🦔" },   // Hedgehog
+  { emoji: "🐨" },   // Koala
+  { emoji: "🐹" },   // Hamster
+  { emoji: "🐰" },   // Rabbit Face
+  { emoji: "🦭" },   // Seal
 ];
 
 export const ProfileSetup = () => {
