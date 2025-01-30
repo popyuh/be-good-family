@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -53,6 +53,15 @@ export const ProfileSetup = ({ onComplete }: ProfileSetupProps) => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
+  // Check auth state on mount
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      console.log("Initial auth check:", session ? "Authenticated" : "Not authenticated");
+    };
+    checkAuth();
+  }, []);
+
   const handleSubmit = async () => {
     if (!name.trim()) {
       toast({
@@ -67,36 +76,35 @@ export const ProfileSetup = ({ onComplete }: ProfileSetupProps) => {
     console.log("Starting profile submission...");
 
     try {
-      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      // First, get the current session
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       
       if (sessionError) {
         console.error('Session error:', sessionError);
         throw sessionError;
       }
-      
-      if (!sessionData.session?.user) {
-        console.error('No user session found');
+
+      if (!session?.user) {
+        console.error('No active session found');
         toast({
           title: "Error",
-          description: "No user found. Please sign in again.",
+          description: "Please sign in to continue",
           variant: "destructive",
         });
         return;
       }
 
-      const user = sessionData.session.user;
-      console.log("Updating profile for user:", user.id);
+      console.log("Current user:", session.user.id);
 
+      // Update profile
       const { error: profileError } = await supabase
         .from('profiles')
         .upsert({
-          id: user.id,
-          email: user.email,
+          id: session.user.id,
+          email: session.user.email,
           name: name.trim(),
           color: selectedColor,
           emoji: selectedEmoji,
-        }, {
-          onConflict: 'id'
         });
 
       if (profileError) {
@@ -119,19 +127,8 @@ export const ProfileSetup = ({ onComplete }: ProfileSetupProps) => {
         await onComplete();
       }
 
-      // Ensure we have the latest session before navigating
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        console.log("Navigation to dashboard...");
-        navigate("/");
-      } else {
-        console.error("No valid session found after profile update");
-        toast({
-          title: "Error",
-          description: "Please sign in again",
-          variant: "destructive",
-        });
-      }
+      console.log("Navigating to dashboard...");
+      navigate("/");
       
     } catch (error) {
       console.error('Error updating profile:', error);
