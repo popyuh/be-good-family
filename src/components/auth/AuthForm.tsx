@@ -44,13 +44,21 @@ export function AuthForm() {
     
     try {
       if (isSignUp) {
-        await signUp(email, password);
+        const { data, error } = await signUp(email, password);
+        console.log("Sign up response:", { data, error });
+        
+        if (error) throw error;
+        
         toast({
           title: "Success",
           description: "Account created successfully! Please check your email to verify your account.",
         });
       } else {
-        await signIn(email, password);
+        const { data, error } = await signIn(email, password);
+        console.log("Sign in response:", { data, error });
+        
+        if (error) throw error;
+        
         toast({
           title: "Success",
           description: "Successfully signed in",

@@ -55,7 +55,7 @@ export const useAuth = () => {
       throw new Error("Failed to create account");
     }
 
-    return data;
+    return { data, error };
   };
 
   const signIn = async (email: string, password: string) => {
@@ -72,7 +72,7 @@ export const useAuth = () => {
       throw error;
     }
 
-    return data;
+    return { data, error };
   };
 
   return {
