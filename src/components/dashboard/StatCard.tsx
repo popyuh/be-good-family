@@ -28,7 +28,7 @@ export const StatCard = ({
 
   return (
     <Card 
-      className="p-4 md:p-6 card-hover cursor-pointer relative w-full"
+      className="p-4 md:p-6 card-hover cursor-pointer relative w-full h-full flex flex-col"
       onClick={() => !isCustomizing && (window.location.href = path)}
       onKeyPress={handleKeyPress}
       tabIndex={0}
@@ -54,13 +54,15 @@ export const StatCard = ({
           <X className="h-4 w-4" />
         </Button>
       )}
-      <div className="flex items-center gap-3 md:gap-4">
+      <div className="flex items-start gap-3 md:gap-4 w-full">
         <div className="p-2 gradient-bg rounded-lg shrink-0">
           <Icon size={20} className="md:w-6 md:h-6" />
         </div>
-        <div className="min-w-0 flex-1">
-          <h3 className="font-semibold text-sm md:text-base truncate">{label}</h3>
-          <p className="text-xs md:text-sm text-muted-foreground truncate">
+        <div className="min-w-0 flex-1 overflow-hidden">
+          <h3 className="font-semibold text-sm md:text-base truncate max-w-full break-words">
+            {label}
+          </h3>
+          <p className="text-xs md:text-sm text-muted-foreground truncate max-w-full">
             {value}
           </p>
         </div>
