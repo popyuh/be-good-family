@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -50,6 +51,7 @@ export const ProfileSetup = ({ onComplete }: ProfileSetupProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   const handleSubmit = async () => {
     if (!name.trim()) {
@@ -65,11 +67,11 @@ export const ProfileSetup = ({ onComplete }: ProfileSetupProps) => {
     console.log("Starting profile submission...");
 
     try {
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
       
-      if (userError) throw userError;
+      if (sessionError) throw sessionError;
       
-      if (!user) {
+      if (!sessionData.session?.user) {
         toast({
           title: "Error",
           description: "No user found. Please sign in again.",
@@ -78,6 +80,7 @@ export const ProfileSetup = ({ onComplete }: ProfileSetupProps) => {
         return;
       }
 
+      const user = sessionData.session.user;
       console.log("Updating profile for user:", user.id);
 
       const { error: profileError } = await supabase
@@ -102,9 +105,14 @@ export const ProfileSetup = ({ onComplete }: ProfileSetupProps) => {
         description: "Profile updated successfully!",
       });
 
+      // Call onComplete callback if provided
       if (onComplete) {
         onComplete();
       }
+
+      // Navigate to dashboard
+      navigate("/");
+      
     } catch (error) {
       console.error('Error updating profile:', error);
       toast({
