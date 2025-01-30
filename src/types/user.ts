@@ -14,4 +14,5 @@ export type ColorOption = {
 
 export type EmojiOption = {
   emoji: string;
+  id: string;  // Added id for unique keys
 };

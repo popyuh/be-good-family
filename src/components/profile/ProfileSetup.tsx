@@ -13,7 +13,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { ColorOption, EmojiOption } from "@/types/user";
 import { supabase } from "@/lib/supabase";
 
-const colorOptions: ColorOption[] = [
+const colorOptions = [
   { name: "Purple", value: "#9b87f5" },
   { name: "Blue", value: "#0EA5E9" },
   { name: "Pink", value: "#D946EF" },
@@ -21,7 +21,7 @@ const colorOptions: ColorOption[] = [
 ];
 
 const emojiOptions: EmojiOption[] = [
-  { emoji: "🦊", id: "fox" },   // Added unique IDs
+  { emoji: "🦊", id: "fox" },
   { emoji: "🦁", id: "lion" },
   { emoji: "🐯", id: "tiger" },
   { emoji: "🐼", id: "panda" },
@@ -108,8 +108,8 @@ export const ProfileSetup = () => {
   };
 
   return (
-    <Card className="p-6 max-w-md mx-auto">
-      <h2 className="text-2xl font-bold mb-6">Complete Your Profile</h2>
+    <Card className="p-4 md:p-6 max-w-md mx-auto">
+      <h2 className="text-xl md:text-2xl font-bold mb-6">Complete Your Profile</h2>
       
       <div className="space-y-6">
         <div className="space-y-2">
