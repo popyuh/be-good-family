@@ -88,6 +88,10 @@ export function AuthForm() {
           throw error;
         }
 
+        if (data?.user?.identities?.length === 0) {
+          throw new Error("User already registered");
+        }
+
         toast({
           title: "Success",
           description: "Please check your email to verify your account",
