@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { Sidebar } from "./Sidebar";
-import { Menu, LogOut } from "lucide-react";
+import { Menu, LogOut, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/lib/supabase";
 import { useNavigate } from "react-router-dom";
+import { useProfile } from "@/hooks/use-profile";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -33,6 +34,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { data: profile } = useProfile();
 
   const handleLogout = async () => {
     try {
@@ -87,6 +89,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 </DropdownMenuItem>
               ))}
               <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link to="/profile" className="w-full px-2 py-2 cursor-pointer flex items-center">
+                  <User className="h-4 w-4 mr-2" />
+                  Profile
+                </Link>
+              </DropdownMenuItem>
               <DropdownMenuItem 
                 onClick={handleLogout}
                 className="text-red-500 focus:text-red-500 focus:bg-red-50"

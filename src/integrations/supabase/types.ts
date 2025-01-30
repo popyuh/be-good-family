@@ -120,28 +120,46 @@ export type Database = {
       }
       profiles: {
         Row: {
+          avatar_url: string | null
+          bio: string | null
           color: string
           created_at: string
           email: string
           emoji: string
           id: string
+          location: string | null
           name: string
+          phone: string | null
+          timezone: string | null
+          updated_at: string | null
         }
         Insert: {
+          avatar_url?: string | null
+          bio?: string | null
           color: string
           created_at?: string
           email: string
           emoji: string
           id: string
+          location?: string | null
           name: string
+          phone?: string | null
+          timezone?: string | null
+          updated_at?: string | null
         }
         Update: {
+          avatar_url?: string | null
+          bio?: string | null
           color?: string
           created_at?: string
           email?: string
           emoji?: string
           id?: string
+          location?: string | null
           name?: string
+          phone?: string | null
+          timezone?: string | null
+          updated_at?: string | null
         }
         Relationships: []
       }

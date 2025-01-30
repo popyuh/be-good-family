@@ -7,6 +7,7 @@ import Messages from "./pages/Messages";
 import Shopping from "./pages/Shopping";
 import Tasks from "./pages/Tasks";
 import MealPlanning from "./pages/MealPlanning";
+import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 
 function App() {
@@ -21,6 +22,7 @@ function App() {
         <Route path="/shopping" element={<Shopping />} />
         <Route path="/tasks" element={<Tasks />} />
         <Route path="/meal-planning" element={<MealPlanning />} />
+        <Route path="/profile" element={<Profile />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>
