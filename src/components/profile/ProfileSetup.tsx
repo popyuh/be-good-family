@@ -21,28 +21,28 @@ const colorOptions: ColorOption[] = [
 ];
 
 const emojiOptions: EmojiOption[] = [
-  { emoji: "🦊" },   // Fox Face
-  { emoji: "🦁" },   // Lion Face
-  { emoji: "🐯" },   // Tiger Face
-  { emoji: "🐼" },   // Panda Face
-  { emoji: "🦝" },   // Raccoon
-  { emoji: "🦊" },   // Fox
-  { emoji: "🦨" },   // Skunk
-  { emoji: "🦦" },   // Otter
-  { emoji: "🦥" },   // Sloth
-  { emoji: "🦘" },   // Kangaroo
-  { emoji: "🦙" },   // Llama
-  { emoji: "🦔" },   // Hedgehog
-  { emoji: "🐨" },   // Koala
-  { emoji: "🐹" },   // Hamster
-  { emoji: "🐰" },   // Rabbit Face
-  { emoji: "🦭" },   // Seal
+  { emoji: "🦊", id: "fox" },   // Added unique IDs
+  { emoji: "🦁", id: "lion" },
+  { emoji: "🐯", id: "tiger" },
+  { emoji: "🐼", id: "panda" },
+  { emoji: "🦝", id: "raccoon" },
+  { emoji: "🦨", id: "skunk" },
+  { emoji: "🦦", id: "otter" },
+  { emoji: "🦥", id: "sloth" },
+  { emoji: "🦘", id: "kangaroo" },
+  { emoji: "🦙", id: "llama" },
+  { emoji: "🦔", id: "hedgehog" },
+  { emoji: "🐨", id: "koala" },
+  { emoji: "🐹", id: "hamster" },
+  { emoji: "🐰", id: "rabbit" },
+  { emoji: "🦭", id: "seal" },
 ];
 
 export const ProfileSetup = () => {
   const [selectedColor, setSelectedColor] = useState<string>(colorOptions[0].value);
   const [selectedEmoji, setSelectedEmoji] = useState<string>(emojiOptions[0].emoji);
   const [name, setName] = useState<string>("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
   const handleSubmit = async () => {
@@ -55,8 +55,13 @@ export const ProfileSetup = () => {
       return;
     }
 
+    setIsSubmitting(true);
+    console.log("Starting profile submission...");
+
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      
+      if (userError) throw userError;
       
       if (!user) {
         toast({
@@ -67,7 +72,9 @@ export const ProfileSetup = () => {
         return;
       }
 
-      const { error } = await supabase
+      console.log("Updating profile for user:", user.id);
+
+      const { error: profileError } = await supabase
         .from('profiles')
         .upsert({
           id: user.id,
@@ -77,8 +84,10 @@ export const ProfileSetup = () => {
           emoji: selectedEmoji,
         });
 
-      if (error) throw error;
+      if (profileError) throw profileError;
 
+      console.log("Profile updated successfully");
+      
       toast({
         title: "Success",
         description: "Profile updated successfully!",
@@ -93,6 +102,8 @@ export const ProfileSetup = () => {
         description: "Failed to update profile. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -142,7 +153,7 @@ export const ProfileSetup = () => {
               <div className="grid grid-cols-4 gap-2 p-2">
                 {emojiOptions.map((option) => (
                   <SelectItem 
-                    key={option.emoji} 
+                    key={option.id}
                     value={option.emoji}
                     className="flex items-center justify-center cursor-pointer hover:bg-accent rounded-lg p-2"
                   >
@@ -155,8 +166,19 @@ export const ProfileSetup = () => {
         </div>
 
         <div className="pt-4">
-          <Button onClick={handleSubmit} className="w-full">
-            Save Profile
+          <Button 
+            onClick={handleSubmit} 
+            className="w-full"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? (
+              <div className="flex items-center gap-2">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                Saving...
+              </div>
+            ) : (
+              'Save Profile'
+            )}
           </Button>
         </div>
       </div>
