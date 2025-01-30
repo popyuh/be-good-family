@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,7 +13,48 @@ interface AvatarUploadProps {
 
 export const AvatarUpload = ({ currentAvatarUrl, onUploadComplete }: AvatarUploadProps) => {
   const [uploading, setUploading] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const { toast } = useToast();
+
+  useEffect(() => {
+    if (currentAvatarUrl) {
+      getSignedUrl(currentAvatarUrl);
+    }
+  }, [currentAvatarUrl]);
+
+  const getSignedUrl = async (path: string) => {
+    try {
+      const { data, error } = await supabase
+        .storage
+        .from('avatars')
+        .createSignedUrl(path, 3600); // 1 hour expiry
+
+      if (error) {
+        console.error('Error getting signed URL:', error);
+        return;
+      }
+
+      if (data?.signedUrl) {
+        setAvatarUrl(data.signedUrl);
+      }
+    } catch (error) {
+      console.error('Error in getSignedUrl:', error);
+    }
+  };
+
+  const validateFile = (file: File) => {
+    const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!validTypes.includes(file.type)) {
+      throw new Error('File type not supported. Please upload a JPG, PNG, or WebP image.');
+    }
+    
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    if (file.size > maxSize) {
+      throw new Error('File size too large. Maximum size is 5MB.');
+    }
+    
+    return true;
+  };
 
   const uploadAvatar = async (event: React.ChangeEvent<HTMLInputElement>) => {
     try {
@@ -24,28 +65,38 @@ export const AvatarUpload = ({ currentAvatarUrl, onUploadComplete }: AvatarUploa
       }
 
       const file = event.target.files[0];
-      const fileExt = file.name.split('.').pop();
+      validateFile(file);
+
       const userId = (await supabase.auth.getUser()).data.user?.id;
       
       if (!userId) {
         throw new Error('User not authenticated');
       }
 
-      const filePath = `${userId}/${Date.now()}.${fileExt}`;
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${userId}/${Date.now()}.${fileExt}`;
 
       const { error: uploadError, data } = await supabase.storage
         .from('avatars')
-        .upload(filePath, file, { upsert: true });
+        .upload(fileName, file, { upsert: true });
 
       if (uploadError) {
         throw uploadError;
       }
 
-      const { data: { publicUrl } } = supabase.storage
+      // Get a signed URL for the uploaded file
+      const { data: urlData, error: urlError } = await supabase.storage
         .from('avatars')
-        .getPublicUrl(filePath);
+        .createSignedUrl(fileName, 3600); // 1 hour expiry
 
-      onUploadComplete(publicUrl);
+      if (urlError) {
+        throw urlError;
+      }
+
+      if (urlData?.signedUrl) {
+        setAvatarUrl(urlData.signedUrl);
+        onUploadComplete(fileName); // Pass the file path instead of the signed URL
+      }
       
       toast({
         title: "Success",
@@ -58,6 +109,7 @@ export const AvatarUpload = ({ currentAvatarUrl, onUploadComplete }: AvatarUploa
         description: error instanceof Error ? error.message : "Error uploading avatar",
         variant: "destructive",
       });
+      console.error('Error in uploadAvatar:', error);
     } finally {
       setUploading(false);
     }
@@ -66,7 +118,7 @@ export const AvatarUpload = ({ currentAvatarUrl, onUploadComplete }: AvatarUploa
   return (
     <div className="flex flex-col items-center gap-4">
       <Avatar className="h-24 w-24">
-        <AvatarImage src={currentAvatarUrl || undefined} />
+        <AvatarImage src={avatarUrl || undefined} />
         <AvatarFallback>
           <Upload className="h-8 w-8 text-muted-foreground" />
         </AvatarFallback>
@@ -75,7 +127,7 @@ export const AvatarUpload = ({ currentAvatarUrl, onUploadComplete }: AvatarUploa
       <div className="flex items-center gap-2">
         <Input
           type="file"
-          accept="image/*"
+          accept="image/jpeg,image/png,image/webp"
           onChange={uploadAvatar}
           disabled={uploading}
           className="hidden"
