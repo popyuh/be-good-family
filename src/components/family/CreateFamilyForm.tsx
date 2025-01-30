@@ -11,9 +11,16 @@ interface CreateFamilyFormProps {
 export const CreateFamilyForm = ({ onSuccess }: CreateFamilyFormProps) => {
   const [familyName, setFamilyName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
   const { toast } = useToast();
 
   const createFamily = async () => {
+    // Prevent multiple submissions
+    if (isSubmitted || isLoading) {
+      console.log("Preventing duplicate submission");
+      return;
+    }
+
     // Validate input
     if (!familyName.trim()) {
       toast({
@@ -25,6 +32,8 @@ export const CreateFamilyForm = ({ onSuccess }: CreateFamilyFormProps) => {
     }
 
     setIsLoading(true);
+    setIsSubmitted(true);
+    
     try {
       console.log("Getting current user...");
       const { data: { user }, error: userError } = await supabase.auth.getUser();
@@ -100,6 +109,8 @@ export const CreateFamilyForm = ({ onSuccess }: CreateFamilyFormProps) => {
         description: "Failed to create family group. Please try again.",
         variant: "destructive",
       });
+      // Reset submitted state on error so user can try again
+      setIsSubmitted(false);
     } finally {
       setIsLoading(false);
     }
@@ -113,7 +124,7 @@ export const CreateFamilyForm = ({ onSuccess }: CreateFamilyFormProps) => {
           placeholder="Enter your family name"
           value={familyName}
           onChange={(e) => setFamilyName(e.target.value)}
-          disabled={isLoading}
+          disabled={isLoading || isSubmitted}
           onKeyPress={(e) => {
             if (e.key === 'Enter') {
               e.preventDefault();
@@ -126,7 +137,7 @@ export const CreateFamilyForm = ({ onSuccess }: CreateFamilyFormProps) => {
       <Button 
         onClick={createFamily} 
         className="w-full"
-        disabled={isLoading}
+        disabled={isLoading || isSubmitted}
       >
         {isLoading ? "Creating..." : "Create Family Group"}
       </Button>
