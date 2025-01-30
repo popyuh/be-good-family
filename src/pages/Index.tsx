@@ -41,6 +41,18 @@ const Index = () => {
   console.log("Family data:", familyData);
   console.log("Family loading:", familyLoading);
 
+  // Show loading state while checking authentication and loading data
+  if (profileLoading || familyLoading) {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center min-h-[50vh]">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      </Layout>
+    );
+  }
+
+  // If not authenticated, show auth form
   if (!session) {
     return (
       <Layout>
@@ -51,16 +63,7 @@ const Index = () => {
     );
   }
 
-  if (profileLoading || familyLoading) {
-    return (
-      <Layout>
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-        </div>
-      </Layout>
-    );
-  }
-
+  // If authenticated but no profile, show profile setup
   if (!profile) {
     console.log("No profile found, showing ProfileSetup");
     return (
@@ -72,6 +75,7 @@ const Index = () => {
     );
   }
 
+  // If has profile but no family, show family setup
   if (!familyData?.isFamilyMember) {
     return (
       <Layout>
@@ -82,6 +86,7 @@ const Index = () => {
     );
   }
 
+  // If everything is set up, show dashboard
   return (
     <Layout>
       <div className="max-w-5xl mx-auto">
