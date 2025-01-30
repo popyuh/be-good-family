@@ -88,8 +88,20 @@ export function AuthForm() {
           throw error;
         }
 
-        if (data?.user?.identities?.length === 0) {
+        // Check if user already exists
+        const { count, error: profileError } = await supabase
+          .from('profiles')
+          .select('*', { count: 'exact', head: true })
+          .eq('email', email);
+          
+        console.log("Profile check - Count:", count, "Error:", profileError);
+        
+        if (count && count > 0) {
           throw new Error("User already registered");
+        }
+
+        if (!data.user) {
+          throw new Error("No user data returned from signup");
         }
 
         toast({
