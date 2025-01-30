@@ -11,24 +11,20 @@ export function AuthForm() {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
-  const [session, setSession] = useState<any>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check current session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log("Current session:", session);
-      setSession(session);
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      console.log("Current session check:", session ? "Authenticated" : "Not authenticated");
       if (session) navigate('/');
-    });
+    };
+    
+    checkSession();
 
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      console.log("Auth state changed:", _event, session);
-      setSession(session);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log("Auth state changed:", event, session ? "Authenticated" : "Not authenticated");
       if (session) navigate('/');
     });
 
@@ -38,10 +34,10 @@ export function AuthForm() {
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    console.log(`Starting ${isSignUp ? 'sign up' : 'sign in'} process...`);
-
+    
     try {
       if (isSignUp) {
+        console.log("Attempting sign up...");
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
@@ -54,44 +50,41 @@ export function AuthForm() {
 
         console.log("Sign up response:", data);
         
-        toast({
-          title: "Check your email",
-          description: "We've sent you a confirmation link to complete your registration.",
-        });
+        if (data.user && !data.session) {
+          toast({
+            title: "Verify your email",
+            description: "Please check your email to complete registration.",
+          });
+        } else {
+          toast({
+            title: "Account created",
+            description: "You can now sign in with your credentials.",
+          });
+        }
         
-        // Don't automatically switch to sign in - user needs to confirm email first
         setEmail("");
         setPassword("");
         
       } else {
-        const { data, error } = await supabase.auth.signInWithPassword({
+        console.log("Attempting sign in...");
+        const { error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
 
         if (error) throw error;
-
-        console.log("Sign in successful:", data);
-        toast({
-          title: "Welcome back!",
-          description: "You have successfully signed in.",
-        });
-        
-        navigate('/');
       }
-      
     } catch (error) {
       console.error("Auth error:", error);
       
-      // More user-friendly error messages
       let errorMessage = "An error occurred during authentication.";
       if (error instanceof Error) {
         if (error.message.includes("Email not confirmed")) {
-          errorMessage = "Please check your email and confirm your account before signing in.";
+          errorMessage = "Please check your email and confirm your account.";
         } else if (error.message.includes("Invalid login credentials")) {
-          errorMessage = "Invalid email or password. Please try again.";
+          errorMessage = "Invalid email or password.";
         } else if (error.message.includes("User already registered")) {
-          errorMessage = "This email is already registered. Please sign in instead.";
+          errorMessage = "This email is already registered. Please sign in.";
         } else {
           errorMessage = error.message;
         }
