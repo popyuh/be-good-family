@@ -62,7 +62,7 @@ export function AuthForm() {
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Starting auth process...");
-    console.log("Mode:", isSignUp ? "Sign Up" : "Sign In");
+    console.log(`Mode: ${isSignUp ? "Sign Up" : "Sign In"}`);
     
     if (!validateInputs()) return;
     
@@ -76,37 +76,24 @@ export function AuthForm() {
           password,
           options: {
             emailRedirectTo: `${window.location.origin}/auth/callback`,
-            data: {
-              email,
-            },
           },
         });
 
-        console.log("Sign up response - Data:", data);
+        console.log("Sign up response:", { data, error });
+        
         if (error) {
           console.error("Sign up error:", error);
           throw error;
         }
 
-        // Check if user already exists
-        const { count, error: profileError } = await supabase
-          .from('profiles')
-          .select('*', { count: 'exact', head: true })
-          .eq('email', email);
-          
-        console.log("Profile check - Count:", count, "Error:", profileError);
-        
-        if (count && count > 0) {
-          throw new Error("User already registered");
-        }
-
         if (!data.user) {
-          throw new Error("No user data returned from signup");
+          console.error("No user data returned from signup");
+          throw new Error("Failed to create account");
         }
 
         toast({
           title: "Success",
-          description: "Please check your email to verify your account",
+          description: "Account created successfully! Please check your email to verify your account.",
         });
         
       } else {
@@ -116,7 +103,8 @@ export function AuthForm() {
           password,
         });
 
-        console.log("Sign in response - Data:", data);
+        console.log("Sign in response:", { data, error });
+        
         if (error) {
           console.error("Sign in error:", error);
           throw error;
