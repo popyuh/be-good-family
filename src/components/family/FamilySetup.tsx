@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/lib/supabase";
-import QRCode from "qrcode.react";
+import { QRCodeSVG } from "qrcode.react";
 
 export const FamilySetup = () => {
   const [familyName, setFamilyName] = useState("");
@@ -163,7 +163,7 @@ export const FamilySetup = () => {
           ) : (
             <div className="space-y-4">
               <div className="flex flex-col items-center space-y-4">
-                <QRCode value={qrValue} size={200} />
+                <QRCodeSVG value={qrValue} size={200} />
                 <div className="text-center">
                   <p className="text-sm text-muted-foreground mb-2">Share this code with family members:</p>
                   <code className="bg-muted p-2 rounded text-lg">{inviteCode}</code>
