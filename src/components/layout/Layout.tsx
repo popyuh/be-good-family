@@ -7,6 +7,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/lib/supabase";
 import { useNavigate } from "react-router-dom";
 import { useProfile } from "@/hooks/use-profile";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -90,8 +91,27 @@ export function Layout({ children }: { children: React.ReactNode }) {
               ))}
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
-                <Link to="/profile" className="w-full px-2 py-2 cursor-pointer flex items-center">
-                  <User className="h-4 w-4 mr-2" />
+                <Link to="/profile" className="w-full px-2 py-2 cursor-pointer flex items-center gap-2">
+                  {profile?.avatar_url ? (
+                    <Avatar className="h-6 w-6">
+                      <AvatarImage src={profile.avatar_url} />
+                      <AvatarFallback>
+                        <div 
+                          className="w-full h-full flex items-center justify-center"
+                          style={{ backgroundColor: profile.color }}
+                        >
+                          {profile.emoji}
+                        </div>
+                      </AvatarFallback>
+                    </Avatar>
+                  ) : (
+                    <div 
+                      className="h-6 w-6 rounded-full flex items-center justify-center text-sm"
+                      style={{ backgroundColor: profile?.color }}
+                    >
+                      {profile?.emoji}
+                    </div>
+                  )}
                   Profile
                 </Link>
               </DropdownMenuItem>

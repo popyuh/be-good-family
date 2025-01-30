@@ -1,5 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { useProfile } from "@/hooks/use-profile";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
   Calendar,
   CircleDollarSign,
@@ -13,6 +15,7 @@ import {
 
 export const Sidebar = () => {
   const location = useLocation();
+  const { data: profile } = useProfile();
 
   const links = [
     { to: "/", icon: Home, label: "Dashboard" },
@@ -27,7 +30,27 @@ export const Sidebar = () => {
 
   return (
     <aside className="flex h-full w-64 flex-col bg-card border-r">
-      <div className="flex h-16 items-center border-b px-6">
+      <div className="flex h-16 items-center gap-3 border-b px-6">
+        {profile?.avatar_url ? (
+          <Avatar className="h-8 w-8">
+            <AvatarImage src={profile.avatar_url} />
+            <AvatarFallback>
+              <div 
+                className="w-full h-full flex items-center justify-center"
+                style={{ backgroundColor: profile.color }}
+              >
+                {profile.emoji}
+              </div>
+            </AvatarFallback>
+          </Avatar>
+        ) : profile?.emoji ? (
+          <div 
+            className="h-8 w-8 rounded-full flex items-center justify-center text-sm"
+            style={{ backgroundColor: profile.color }}
+          >
+            {profile.emoji}
+          </div>
+        ) : null}
         <span className="text-lg font-semibold">BeGoodFamily</span>
       </div>
       
